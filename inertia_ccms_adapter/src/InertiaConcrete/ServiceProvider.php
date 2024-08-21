@@ -23,12 +23,6 @@ class ServiceProvider extends BaseServiceProvider
         $this->app->singleton(ResponseFactory::class);
         $this->app->bind(Gateway::class, HttpGateway::class);
 
-        //TODO: Load config from file
-        // $this->mergeConfigFrom(
-        //     __DIR__.'/../config/inertia.php',
-        //     'inertia'
-        // );
-
         //TODO: Register some sort of view processing for initial render
         $this->registerBladeDirectives();
         
@@ -47,9 +41,9 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->registerConsoleCommands();
 
-        $this->publishes([
-            __DIR__.'/../config/inertia.php' => config_path('inertia.php'),
-        ]);
+        // $this->publishes([
+        //     __DIR__.'/../config/inertia.php' => config_path('inertia.php'),
+        // ]);
     }
 
     protected function registerBladeDirectives(): void

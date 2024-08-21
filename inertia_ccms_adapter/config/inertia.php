@@ -47,7 +47,7 @@ return [
 
         'page_paths' => [
 
-            resource_path('js/Pages'),
+            __DIR__.'/../themes/inertia/js/Pages',
 
         ],
 

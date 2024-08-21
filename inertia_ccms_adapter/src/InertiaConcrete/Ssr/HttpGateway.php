@@ -4,6 +4,7 @@ namespace InertiaConcrete\Ssr;
 
 use Exception;
 use Concrete\Src\Routing\Router as Http;
+use Package;
 
 class HttpGateway implements Gateway
 {
@@ -12,11 +13,13 @@ class HttpGateway implements Gateway
      */
     public function dispatch(array $page): ?Response
     {
-        if (! config('inertia.ssr.enabled', true) || ! (new BundleDetector())->detect()) {
+        $config = Package::getByHandle('inertia_ccms_adapter')->getFileConfig();
+
+        if (! ($config->get('inertia.ssr.enabled') === true) || ! (new BundleDetector())->detect()) {
             return null;
         }
 
-        $url = str_replace('/render', '', config('inertia.ssr.url', 'http://127.0.0.1:13714')).'/render';
+        $url = str_replace('/render', '', $config->get('inertia.ssr.url','http://127.0.0.1:13714')).'/render';
 
         try {
             $response = Http::post($url, $page)->throw()->json();
