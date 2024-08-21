@@ -20,8 +20,8 @@ use SinglePage;
 use Concrete\Core\Page\Theme\Theme;
 use Concrete\Core\Site\Service as SiteService;
 use InertiaRouter\RouteList;
-use InertiaConcrete\Middleware as InertiaMiddleware;
-use InertiaConcrete\ServiceProvider as InertiaServiceProvider;
+use Inertia\Middleware as InertiaMiddleware;
+use Inertia\ServiceProvider as InertiaServiceProvider;
 use Concrete\Core\Http\ServerInterface;
 
 class Controller extends Package
@@ -43,7 +43,7 @@ class Controller extends Package
 
     protected $pkgAutoloaderRegistries = [
         'src/InertiaRouter' => 'InertiaRouter',
-        'src/InertiaConcrete' => 'InertiaConcrete'
+        'src/Inertia' => 'Inertia'
     ];
 
     private function installOrUpgrade($pkg = null){

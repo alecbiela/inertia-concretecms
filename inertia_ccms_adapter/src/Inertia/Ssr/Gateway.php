@@ -1,6 +1,6 @@
 <?php
 
-namespace InertiaConcrete\Ssr;
+namespace Inertia\Ssr;
 
 interface Gateway
 {

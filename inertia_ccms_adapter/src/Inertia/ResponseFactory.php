@@ -1,10 +1,10 @@
 <?php
 
-namespace InertiaConcrete;
+namespace Inertia;
 
 use Closure;
 use Concrete\Core\Utility\Service\Arrays as Arr;
-use InertiaConcrete\Support\Header;
+use Inertia\Support\Header;
 use Concrete\Core\Support\Facade\Application as App;
 use Concrete\Core\Http\Request;
 use Illuminate\Support\Traits\Macroable;

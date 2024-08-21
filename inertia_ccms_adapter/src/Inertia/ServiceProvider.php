@@ -1,12 +1,12 @@
 <?php
 
-namespace InertiaConcrete;
+namespace Inertia;
 
 use LogicException;
 use ReflectionException;
-use InertiaConcrete\Ssr\Gateway;
-use InertiaConcrete\Ssr\HttpGateway;
-use InertiaConcrete\Support\Header;
+use Inertia\Ssr\Gateway;
+use Inertia\Ssr\HttpGateway;
+use Inertia\Support\Header;
 
 use Concrete\Core\Http\Request;
 use Concrete\Core\Routing\Router;

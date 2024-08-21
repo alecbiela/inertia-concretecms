@@ -12,7 +12,7 @@ defined('C5_EXECUTE') or die('Access Denied');
 use Concrete\Core\Routing\RouteListInterface;
 use Concrete\Core\Routing\Router;
 use Concrete\Core\Routing\Route;
-use InertiaConcrete\Inertia;
+use Inertia\Inertia;
 
 class RouteList implements RouteListInterface
 {

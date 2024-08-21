@@ -1,6 +1,6 @@
 <?php
 
-namespace InertiaConcrete;
+namespace Inertia;
 
 use Concrete\Core\Support\Facade\Application as App;
 

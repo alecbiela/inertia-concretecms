@@ -1,6 +1,6 @@
 <?php
 
-namespace InertiaConcrete\Support;
+namespace Inertia\Support;
 
 class Header
 {

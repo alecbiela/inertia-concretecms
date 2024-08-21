@@ -1,6 +1,6 @@
 <?php
 
-namespace InertiaConcrete\Ssr;
+namespace Inertia\Ssr;
 
 use Exception;
 use Concrete\Src\Routing\Router as Http;

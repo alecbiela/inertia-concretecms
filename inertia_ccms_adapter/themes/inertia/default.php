@@ -11,8 +11,6 @@
           'pageMetaKeywords' => isset($pageMetaKeywords) ? $pageMetaKeywords : ''
       ]);
     ?>
-
-    <!-- @vite('resources/js/app.js') -->
     <?php 
       /* Replaces @inertiaHead */
       $view->inc('elements/inertiaHead.php', array('pageSSR'=>$pageSSR)); 
@@ -25,7 +23,7 @@
         $id = 'app'; 
         if (!isset($__inertiaSsrDispatched)) {
             $__inertiaSsrDispatched = true;
-            $__inertiaSsrResponse = Core::make(\InertiaConcrete\Ssr\Gateway::class)->dispatch($pageSSR);
+            $__inertiaSsrResponse = Core::make(\Inertia\Ssr\Gateway::class)->dispatch($pageSSR);
         }
 
         if ($__inertiaSsrResponse) {
@@ -38,6 +36,5 @@
 
       View::element('footer_required');
     ?>
-    <script type="text/javascript" src="<?= $view->getThemePath(); ?>/js/app.js"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 <?php
 
-namespace InertiaConcrete;
+namespace Inertia;
 
 class Directive
 {

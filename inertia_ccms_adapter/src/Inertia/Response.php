@@ -1,9 +1,9 @@
 <?php
 
-namespace InertiaConcrete;
+namespace Inertia;
 
 use Closure;
-use InertiaConcrete\Support\Header;
+use Inertia\Support\Header;
 use Concrete\Core\Utility\Service\Arrays as Arr;
 use Illuminate\Support\Str;
 use Concrete\Core\Http\Request;

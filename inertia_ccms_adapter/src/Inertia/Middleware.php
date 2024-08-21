@@ -1,9 +1,9 @@
 <?php
 
-namespace InertiaConcrete;
+namespace Inertia;
 
 use Closure;
-use InertiaConcrete\Support\Header;
+use Inertia\Support\Header;
 use Concrete\Core\Routing\Redirect;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
