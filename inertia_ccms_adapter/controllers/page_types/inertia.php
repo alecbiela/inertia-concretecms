@@ -9,8 +9,10 @@ class Inertia extends PageTypeController {
     
     public function view()
     {
-        // Set the $pageSSR variable used in the template for SSR
-        $this->set('pageSSR', array());
+        // Set the $page variable used in the template
+        $page = $this->request->request->get('page');
+        if(!isset($page)) $page = array();
+        $this->set('page', $page);
     }
 }
 ?>

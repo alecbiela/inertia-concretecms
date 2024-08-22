@@ -72,9 +72,6 @@ class Controller extends Package
         $site = $this->app->make(SiteService::class)->getDefault();
         $theme->applyToSite($site);
 
-        // Load up the config from config/inertia.php
-        $cfg = include './config/inertia.php';
-        $pkg->getFileConfig()->save('inertia', $cfg);
     }
 
     /**
@@ -121,5 +118,10 @@ class Controller extends Package
         // Register the Inertia service provider
         $list = $this->app->make('Concrete\Core\Foundation\Service\ProviderList');
         $list->registerProvider(InertiaServiceProvider::class);
+
+        // Load the configuration file from config/inertia.php
+        $cfg = include './config/inertia.php';
+        $pkg = Package::getByHandle($this->pkgHandle);
+        $pkg->getFileConfig()->save('inertia', $cfg);
     }
 }

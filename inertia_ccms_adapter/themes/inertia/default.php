@@ -13,7 +13,14 @@
     ?>
     <?php 
       /* Replaces @inertiaHead */
-      $view->inc('elements/inertiaHead.php', array('pageSSR'=>$pageSSR)); 
+      if (!isset($__inertiaSsrDispatched)) {
+          $__inertiaSsrDispatched = true;
+          $__inertiaSsrResponse = Core::make(\Inertia\Ssr\Gateway::class)->dispatch($page);
+      }
+
+      if ($__inertiaSsrResponse) {
+          echo $__inertiaSsrResponse->head;
+      }
     ?>
   </head>
   <body>
@@ -23,18 +30,19 @@
         $id = 'app'; 
         if (!isset($__inertiaSsrDispatched)) {
             $__inertiaSsrDispatched = true;
-            $__inertiaSsrResponse = Core::make(\Inertia\Ssr\Gateway::class)->dispatch($pageSSR);
+            $__inertiaSsrResponse = Core::make(\Inertia\Ssr\Gateway::class)->dispatch($page);
         }
 
         if ($__inertiaSsrResponse) {
             echo $__inertiaSsrResponse->body;
         } else {
             ?>
-                <div id="<?= $id; ?>" data-page="<?= json_encode($pageSSR); ?>"></div>
+                <div id="<?= $id; ?>" data-page='<?= json_encode($page); ?>'></div>
             <?php
         }
 
       View::element('footer_required');
     ?>
+    <script type="module" src="<?= $this->getThemePath(); ?>/js/app.bundle.js"></script>
   </body>
 </html>

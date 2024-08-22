@@ -3,6 +3,8 @@
 namespace Inertia;
 
 use Closure;
+use Core;
+use Page;
 use Inertia\Support\Header;
 use Concrete\Core\Utility\Service\Arrays as Arr;
 use Illuminate\Support\Str;
@@ -14,13 +16,14 @@ use Illuminate\Support\Traits\Macroable;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Concrete\Core\Http\ResponseFactory;
+use Concrete\Core\Application\ApplicationAwareTrait;
 
 // use Illuminate\Http\Resources\Json\JsonResource;
 // use Illuminate\Http\Resources\Json\ResourceResponse;
 
 class Response implements Responsable
 {
-    use Macroable;
+    use Macroable, ApplicationAwareTrait;
 
     protected $component;
     protected $props;
@@ -94,15 +97,21 @@ class Response implements Responsable
         $page = [
             'component' => $this->component,
             'props' => $props,
-            'url' => Str::start(Str::after($request->fullUrl(), $request->getSchemeAndHttpHost()), '/'),
+            'url' => Str::start(Str::after($request->getPath(), $request->getSchemeAndHttpHost()), '/'),
             'version' => $this->version,
         ];
 
-        if ($request->header(Header::INERTIA)) {
+        if ($request->headers->get(Header::INERTIA)) {
             return new JsonResponse($page, 200, [Header::INERTIA => 'true']);
         }
 
-        return ResponseFactory::view($this->rootView, $this->viewData + ['page' => $page]);
+        /**
+         * If this is not an inertia request, render the default page type/template from the Concrete CMS theme
+         */
+        $request->request->add($this->viewData + ['page' => $page]);
+        $rf = Core::make(ResponseFactory::class);
+        $c = Page::getByPath($request->getPath());
+        return $rf->collection($c);
     }
 
     /**
@@ -110,7 +119,7 @@ class Response implements Responsable
      */
     public function resolvePartialProps(Request $request, array $props): array
     {
-        $isPartial = $request->header(Header::PARTIAL_COMPONENT) === $this->component;
+        $isPartial = $request->headers->get(Header::PARTIAL_COMPONENT) === $this->component;
 
         if (! $isPartial) {
             return array_filter($props, static function ($prop) {
@@ -118,8 +127,8 @@ class Response implements Responsable
             });
         }
 
-        $only = array_filter(explode(',', $request->header(Header::PARTIAL_ONLY, '')));
-        $except = array_filter(explode(',', $request->header(Header::PARTIAL_EXCEPT, '')));
+        $only = array_filter(explode(',', $request->headers->get(Header::PARTIAL_ONLY, '')));
+        $except = array_filter(explode(',', $request->headers->get(Header::PARTIAL_EXCEPT, '')));
 
         $props = $only ? Arr::only($props, $only) : $props;
 
@@ -165,9 +174,9 @@ class Response implements Responsable
                 $value = $value->wait();
             }
 
-            // if ($value instanceof ResourceResponse || $value instanceof JsonResource) {
-            //     $value = $value->toResponse($request)->getData(true);
-            // }
+            if ($value instanceof ResourceResponse || $value instanceof JsonResource) {
+                $value = $value->toResponse($request)->getData(true);
+            }
 
             if ($value instanceof Arrayable) {
                 $value = $value->toArray();
