@@ -120,7 +120,7 @@ class Controller extends Package
         $list->registerProvider(InertiaServiceProvider::class);
 
         // Load the configuration file from config/inertia.php
-        $cfg = include './config/inertia.php';
+        $cfg = include $_SERVER['DOCUMENT_ROOT'].'/packages/inertia_ccms_adapter/config/inertia.php';
         $pkg = Package::getByHandle($this->pkgHandle);
         $pkg->getFileConfig()->save('inertia', $cfg);
     }
