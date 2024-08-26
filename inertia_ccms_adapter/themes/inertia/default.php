@@ -25,8 +25,6 @@
     <div class='<?= $c->getPageWrapperClass()?>'>
       <?php
           /* Replaces @inertia */
-          // TODO: Add replacement for $expression to customize SSR app root, for now ID is always 'app'
-          $id = 'app'; 
           if (!isset($__inertiaSsrDispatched)) {
               $__inertiaSsrDispatched = true;
               $__inertiaSsrResponse = Core::make(\Inertia\Ssr\Gateway::class)->dispatch($page);
@@ -36,7 +34,7 @@
               echo $__inertiaSsrResponse->body;
           } else {
               ?>
-                  <div id="<?= $id; ?>" data-page='<?= json_encode($page); ?>'></div>
+                  <div id="<?= $rootView; ?>" data-page='<?= json_encode($page); ?>'></div>
               <?php
           }
       ?>

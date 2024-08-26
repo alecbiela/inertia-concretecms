@@ -110,6 +110,7 @@ class Response implements Responsable
 
         // If not Inertia (e.g. first-time page load) send a CMS page response
         $request->request->add($this->viewData + ['page' => $page]);
+        $request->request->add(['rootView'=>$this->rootView]);
         $c = Page::getByPath($request->getPath());
         return $rf->collection($c);
     }
