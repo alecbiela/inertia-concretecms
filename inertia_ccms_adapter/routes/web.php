@@ -1,6 +1,6 @@
 <?php 
     /**
-     * Web route list - similar to Laravel's api.php default route file
+     * Web route list - similar to Laravel's web.php default route file
      * Controllers are not namespaced, and will require full controller paths
      * @var Concrete\Core\Application\Application $app    - The Application Instance
      * @var Concrete\Core\Routing\Router          $router - The Router Instance
@@ -10,6 +10,9 @@
     use Inertia\Inertia;
     
     $router->get('/', function() { 
+        // Shorthand using helpers
+        // return inertia('HomePage', ['propTest' => 'This is a prop']);
+
         return Inertia::render('HomePage', [
             'propTest' => 'This is a prop'
         ]);

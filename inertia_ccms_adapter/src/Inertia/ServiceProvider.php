@@ -7,6 +7,7 @@ use ReflectionException;
 use Inertia\Ssr\Gateway;
 use Inertia\Ssr\HttpGateway;
 use Inertia\Support\Header;
+use Inertia\Support\Helper;
 
 use Concrete\Core\Http\Request;
 use Concrete\Core\Routing\Router;
@@ -22,6 +23,9 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(ResponseFactory::class);
         $this->app->bind(Gateway::class, HttpGateway::class);
+
+        // Register global inertia helper functions
+        require_once __DIR__ . '/helpers.php';
         
         /**
          * TODO: Testing macros and console command support

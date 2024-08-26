@@ -13,7 +13,6 @@ use Concrete\Core\Routing\RouteListInterface;
 use Concrete\Core\Routing\Router;
 use Concrete\Core\Routing\Route;
 use Inertia\Inertia;
-require_once __DIR__ . '/../Inertia/helpers.php';
 
 class RouteList implements RouteListInterface
 {
@@ -42,8 +41,6 @@ class RouteList implements RouteListInterface
         $allRoutes->buildGroup()
         ->setPrefix('/api')
         ->routes('api.php', 'inertia_ccms_adapter');
-
-
     }
 
 /**
