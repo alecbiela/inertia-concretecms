@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * TODO: Make a helper service inside Concrete CMS to utilize these functions
+ */
 if (! function_exists('inertia')) {
     /**
      * Inertia helper.

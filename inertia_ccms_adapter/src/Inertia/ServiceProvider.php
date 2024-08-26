@@ -22,10 +22,10 @@ class ServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton(ResponseFactory::class);
         $this->app->bind(Gateway::class, HttpGateway::class);
-
-        //TODO: Register some sort of view processing for initial render
-        $this->registerBladeDirectives();
         
+        /**
+         * TODO: Testing macros and console command support
+         */
         //$this->registerTestingMacros();
 
         // $this->app->bind('inertia.testing.view-finder', function ($app) {
@@ -35,23 +35,8 @@ class ServiceProvider extends BaseServiceProvider
         //         $app['config']->get('inertia.testing.page_extensions')
         //     );
         // });
-    }
 
-    public function boot(): void
-    {
-        $this->registerConsoleCommands();
-
-        // $this->publishes([
-        //     __DIR__.'/../config/inertia.php' => config_path('inertia.php'),
-        // ]);
-    }
-
-    protected function registerBladeDirectives(): void
-    {
-        // $this->callAfterResolving('blade.compiler', function ($blade) {
-        //     $blade->directive('inertia', [Directive::class, 'compile']);
-        //     $blade->directive('inertiaHead', [Directive::class, 'compileHead']);
-        // });
+        // $this->registerConsoleCommands();
     }
 
     protected function registerConsoleCommands(): void

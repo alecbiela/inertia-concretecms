@@ -46,6 +46,9 @@ class RouteList implements RouteListInterface
 
     }
 
+/**
+ * TODO: Create a new class extending from the default Router to include ::inertia macro support
+ */
     /**
      * Replacement for the Laravel implementation's Router::inertia macro
      * @param string      $uri        The URI slug to trigger this route

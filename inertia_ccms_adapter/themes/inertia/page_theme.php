@@ -13,6 +13,6 @@ class PageTheme extends Theme
 
  public function getThemeDescription()
  {
-     return t('Adapter theme for an Inertia frontend (Vue, Svelte, React, etc.)');
+     return t('Foundation for Inertia.js frontend display.');
  }
 }

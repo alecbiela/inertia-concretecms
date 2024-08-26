@@ -12,7 +12,7 @@ class BundleDetector
      * 1. Any custom path supplied to the config value "inertia.ssr.bundle"
      * 2. The bootstrap/ssr folder (relative to package root) for a module JS file
      * 3. The bootstrap/ssr folder (relative to package root) for a standard JS file
-     * 4. A ssr.js file inside 
+     * 4. A ssr.js file inside the theme (themes/inertia/js/ssr.js)
      * If 
      */
     public function detect(): bool

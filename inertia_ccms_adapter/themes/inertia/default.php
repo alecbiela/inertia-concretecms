@@ -18,13 +18,11 @@
           $__inertiaSsrResponse = Core::make(\Inertia\Ssr\Gateway::class)->dispatch($page);
       }
 
-      if ($__inertiaSsrResponse) {
-          echo $__inertiaSsrResponse->head;
-      }
+      if ($__inertiaSsrResponse) echo $__inertiaSsrResponse->head;
     ?>
   </head>
   <body>
-    <div class='<?php echo $c->getPageWrapperClass()?>'>
+    <div class='<?= $c->getPageWrapperClass()?>'>
       <?php
           /* Replaces @inertia */
           // TODO: Add replacement for $expression to customize SSR app root, for now ID is always 'app'
@@ -43,7 +41,6 @@
           }
       ?>
     </div>
-    
     <?php View::element('footer_required', 'inertia_ccms_adapter'); ?>
     <script type="module" src="<?= $this->getThemePath(); ?>/js/app.bundle.js"></script>
   </body>

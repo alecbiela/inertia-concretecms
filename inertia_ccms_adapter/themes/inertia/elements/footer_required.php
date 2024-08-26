@@ -1,4 +1,9 @@
 <?php
+/**
+ * Custom footer/base template to use with Inertia page template
+ * Removes unnecessary features such as page edit mode/design buttons
+ * @inheritdoc concrete/elements/footer_required.php
+ */
 use Concrete\Core\Localization\Localization;
 use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\User\User;

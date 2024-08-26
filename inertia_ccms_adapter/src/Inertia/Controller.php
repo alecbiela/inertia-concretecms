@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * TODO: Refactor this for Concrete CMS
+ */
 namespace Inertia;
 
 use Concrete\Core\Http\Request;

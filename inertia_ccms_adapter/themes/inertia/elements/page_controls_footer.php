@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * Custom footer controls to use with Inertia page template
+ * Removes unnecessary features such as page edit mode/design buttons
+ * @inheritdoc concrete/elements/page_controls_footer.php
+ */
 use Concrete\Core\Support\Facade\Url;
 use Concrete\Core\Url\Resolver\Manager\ResolverManagerInterface;
 use Concrete\Core\Announcement\AnnouncementService;

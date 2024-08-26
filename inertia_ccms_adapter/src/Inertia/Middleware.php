@@ -30,10 +30,6 @@ class Middleware implements MiddlewareInterface
      */
     public function version(Request $request)
     {
-        // Not supported in ConcreteCMS
-        // if (config('app.asset_url')) {
-        //     return md5(config('app.asset_url'));
-        // }
 
         if (file_exists($manifest = $_SERVER['DOCUMENT_ROOT'].'/packages/inertia_ccms_adapter/themes/inertia/js/mix-manifest.json')) {
             return md5_file($manifest);
@@ -88,7 +84,8 @@ class Middleware implements MiddlewareInterface
         Inertia::setRootView($this->rootView($request));
 
         $response = $frame->next($request);
-        // Need to conver the Inertia-specific response to a Symfony response
+
+        // If we're passed an Inertia\Response, convert it to a Symfony Response
         $response = ($response instanceof \Inertia\Response === true) ? $response->toResponse($request) : $response;
         $response->headers->set('Vary', Header::INERTIA);
 

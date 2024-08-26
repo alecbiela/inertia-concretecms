@@ -1,4 +1,7 @@
 <?php
+/**
+ * The controller for the page loaded on first visit (before Inertia gets going)
+ */
 namespace Concrete\Package\InertiaCcmsAdapter\Controller\PageType;
 
 use Concrete\Core\Page\Controller\PageTypeController;

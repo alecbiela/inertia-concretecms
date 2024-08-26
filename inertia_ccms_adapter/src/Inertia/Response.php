@@ -9,7 +9,6 @@ use Inertia\Support\Header;
 use Concrete\Core\Utility\Service\Arrays as Arr;
 use Illuminate\Support\Str;
 use Concrete\Core\Http\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Concrete\Core\Support\Facade\Application as App;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Support\Traits\Macroable;
@@ -17,9 +16,6 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Concrete\Core\Http\ResponseFactory;
 use Concrete\Core\Application\ApplicationAwareTrait;
-
-// use Illuminate\Http\Resources\Json\JsonResource;
-// use Illuminate\Http\Resources\Json\ResourceResponse;
 
 class Response implements Responsable
 {
@@ -87,6 +83,7 @@ class Response implements Responsable
      * @param Request $request
      *
      * @return \Symfony\Component\HttpFoundation\Response
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      */
     public function toResponse($request)
     {
@@ -101,15 +98,18 @@ class Response implements Responsable
             'version' => $this->version,
         ];
 
+        /**
+         * Use the Concrete CMS Response Factory to build and send a response
+         */
+        $rf = Core::make(ResponseFactory::class);
+
+        // If Inertia, send a JSON response with the data
         if ($request->headers->get(Header::INERTIA)) {
-            return new JsonResponse($page, 200, [Header::INERTIA => 'true']);
+            return $rf->json($page, 200, [Header::INERTIA => 'true']);
         }
 
-        /**
-         * If this is not an inertia request, render the default page type/template from the Concrete CMS theme
-         */
+        // If not Inertia (e.g. first-time page load) send a CMS page response
         $request->request->add($this->viewData + ['page' => $page]);
-        $rf = Core::make(ResponseFactory::class);
         $c = Page::getByPath($request->getPath());
         return $rf->collection($c);
     }
@@ -158,30 +158,25 @@ class Response implements Responsable
     public function evaluateProps(array $props, Request $request, bool $unpackDotProps = true): array
     {
         foreach ($props as $key => $value) {
-            if ($value instanceof Closure) {
-                $value = App::call($value);
+
+            switch(true){
+                case (
+                    $value instanceof Closure ||
+                    $value instanceof LazyProp ||
+                    $value instanceof AlwaysProp 
+                    ):
+                    $value = App::call($value);
+                    break;
+                case ($value instanceof PromiseInterface):
+                    $value = $value->wait();
+                    break;
+                case ($value instanceof Arrayable):
+                    $value = $value->toArray();
+                    break;
+                // no "default:" as the default is for $value to remain unchanged
             }
 
-            if ($value instanceof LazyProp) {
-                $value = App::call($value);
-            }
-
-            if ($value instanceof AlwaysProp) {
-                $value = App::call($value);
-            }
-
-            if ($value instanceof PromiseInterface) {
-                $value = $value->wait();
-            }
-
-            if ($value instanceof ResourceResponse || $value instanceof JsonResource) {
-                $value = $value->toResponse($request)->getData(true);
-            }
-
-            if ($value instanceof Arrayable) {
-                $value = $value->toArray();
-            }
-
+            // if $value is now an array of more props, recursively evaluate them
             if (is_array($value)) {
                 $value = $this->evaluateProps($value, $request, false);
             }
