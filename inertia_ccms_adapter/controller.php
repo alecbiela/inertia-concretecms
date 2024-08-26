@@ -19,10 +19,7 @@ use PageType;
 use SinglePage;
 use Concrete\Core\Page\Theme\Theme;
 use Concrete\Core\Site\Service as SiteService;
-use InertiaRouter\RouteList;
-use Inertia\Middleware as InertiaMiddleware;
 use Inertia\ServiceProvider as InertiaServiceProvider;
-use Concrete\Core\Http\ServerInterface;
 
 class Controller extends Package
 {
@@ -106,22 +103,8 @@ class Controller extends Package
      * before any blocks, pages, etc. are loaded.
      */
     public function on_start(){
-        // Load the configuration file from config/inertia.php
-        $cfg = include $_SERVER['DOCUMENT_ROOT'].'/packages/inertia_ccms_adapter/config/inertia.php';
-        $pkg = Package::getByHandle($this->pkgHandle);
-        $pkg->getFileConfig()->save('inertia', $cfg);
-
         // Register the Inertia service provider
         $list = $this->app->make('Concrete\Core\Foundation\Service\ProviderList');
         $list->registerProvider(InertiaServiceProvider::class);
-
-        // Add the Inertia middleware to the middleware chain
-        $server = $this->app->make(ServerInterface::class);
-        $server->addMiddleware($this->app->make(InertiaMiddleware::class));
-
-        // Load up our routes from InertiaRouter
-        $router = $this->app->make('router');
-        $list = new RouteList();
-        $list->loadRoutes($router);
     }
 }

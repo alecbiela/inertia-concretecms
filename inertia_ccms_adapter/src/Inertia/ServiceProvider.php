@@ -7,10 +7,14 @@ use ReflectionException;
 use Inertia\Ssr\Gateway;
 use Inertia\Ssr\HttpGateway;
 use Inertia\Support\Header;
-use Inertia\Support\Helper;
+use Inertia\Middleware as InertiaMiddleware;
 
 use Concrete\Core\Http\Request;
 use Concrete\Core\Routing\Router;
+use Concrete\Core\Http\ServerInterface;
+use Package;
+
+use InertiaRouter\RouteList;
 
 //use Illuminate\View\FileViewFinder;
 //use Illuminate\Testing\TestResponse;
@@ -21,8 +25,17 @@ class ServiceProvider extends BaseServiceProvider
 {
     public function register(): void
     {
+        // Register app singletons to be used with $app->make
         $this->app->singleton(ResponseFactory::class);
         $this->app->bind(Gateway::class, HttpGateway::class);
+
+        $this->mergeConfigFrom(
+            $_SERVER['DOCUMENT_ROOT'].'/packages/inertia_ccms_adapter/config/inertia.php', 
+            'inertia'
+        );
+
+        $this->registerMiddleware();
+        $this->registerRoutes();
 
         // Register global inertia helper functions
         require_once __DIR__ . '/helpers.php';
@@ -41,6 +54,19 @@ class ServiceProvider extends BaseServiceProvider
         // });
 
         // $this->registerConsoleCommands();
+    }
+
+    protected function registerMiddleware(): void
+    {
+        $server = $this->app->make(ServerInterface::class);
+        $server->addMiddleware($this->app->make(InertiaMiddleware::class));
+    }
+
+    protected function registerRoutes(): void 
+    {
+        $router = $this->app->make('router');
+        $list = new RouteList();
+        $list->loadRoutes($router);
     }
 
     protected function registerConsoleCommands(): void
@@ -69,4 +95,11 @@ class ServiceProvider extends BaseServiceProvider
 
     //     throw new LogicException('Could not detect TestResponse class.');
     // }
+
+    private function mergeConfigFrom($file, $key){
+        // Load configuration values from file
+        $cfg = include $file;
+        $pkg = Package::getByHandle('inertia_ccms_adapter');
+        $pkg->getFileConfig()->save($key, $cfg);
+    }
 }
