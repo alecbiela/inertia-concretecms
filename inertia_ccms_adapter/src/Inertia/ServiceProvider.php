@@ -30,7 +30,7 @@ class ServiceProvider extends BaseServiceProvider
         $this->app->bind(Gateway::class, HttpGateway::class);
 
         $this->mergeConfigFrom(
-            $_SERVER['DOCUMENT_ROOT'].'/packages/inertia_ccms_adapter/config/inertia.php', 
+            __DIR__ . '/../../config/inertia.php', 
             'inertia'
         );
 

@@ -27,7 +27,7 @@ class BundleDetector
             $packagePath.'/themes/inertia/js/ssr.js'
         );
         foreach($locations as $loc){
-            if(file_exists($loc)) return true;
+            if(!is_null($loc) && file_exists($loc)) return true;
         }
         return false;
     }
