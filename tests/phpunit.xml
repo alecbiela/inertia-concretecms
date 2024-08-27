@@ -1,0 +1,28 @@
+<phpunit
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/sebastianbergmann/phpunit/8.5.20/phpunit.xsd"
+        bootstrap="./bootstrap.php"
+        colors="true"
+        convertErrorsToExceptions="true"
+        convertNoticesToExceptions="false"
+        convertWarningsToExceptions="true"
+        backupGlobals="false"
+        backupStaticAttributes="false"
+        verbose="true"
+        processIsolation="false"
+>
+    <testsuites>
+        <testsuite name="Tests">
+            <directory>tests/Tests/</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">../inertia_ccms_adapter/</directory>
+        </whitelist>
+    </filter>
+    <php>
+        <ini name="memory_limit" value="-1"/>
+        <ini name="error_reporting" value="-1"/>
+    </php>
+</phpunit>
