@@ -38,19 +38,25 @@ class ResponseFactory
      */
     public function share($key, $value = null): void
     {
+        // Arr is non-static in Concrete CMS
+        $ah = new Arr();
+
         if (is_array($key)) {
             $this->sharedProps = array_merge($this->sharedProps, $key);
         } elseif ($key instanceof Arrayable) {
             $this->sharedProps = array_merge($this->sharedProps, $key->toArray());
         } else {
-            Arr::set($this->sharedProps, $key, $value);
+            $this->sharedProps = $ah->set($this->sharedProps, $key, $value);
         }
     }
 
     public function getShared(string $key = null, $default = null)
     {
+        // Arr is non-static in Concrete CMS
+        $ah = new Arr();
+
         if ($key) {
-            return Arr::get($this->sharedProps, $key, $default);
+            return $ah->get($this->sharedProps, $key, $default);
         }
 
         return $this->sharedProps;
