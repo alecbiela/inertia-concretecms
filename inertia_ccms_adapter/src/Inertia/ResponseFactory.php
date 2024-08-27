@@ -11,9 +11,9 @@ use Illuminate\Support\Traits\Macroable;
 use Illuminate\Contracts\Support\Arrayable;
 
 use Concrete\Core\Routing\Redirect;
+use Concrete\Core\Routing\RedirectResponse;
 use Concrete\Core\Http\ResponseFactory as BaseResponse;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse as SymfonyRedirect;
 
 class ResponseFactory
 {
@@ -112,14 +112,17 @@ class ResponseFactory
     }
 
     /**
-     * @param string|SymfonyRedirect $url
+     * @param string|RedirectResponse $url
      */
     public function location($url): SymfonyResponse
     {
-        if (Request::inertia()) {
-            return BaseResponse::make('', 409, [Header::LOCATION => $url instanceof SymfonyRedirect ? $url->getTargetUrl() : $url]);
+        $app = App::getFacadeApplication();
+        $req = Request::getInstance();
+
+        if ((bool)$req->headers->get(Header::INERTIA) === true) {
+            return $app->make(BaseResponse::class)->create('', 409, [Header::LOCATION => $url instanceof RedirectResponse ? $url->getTargetUrl() : $url]);
         }
 
-        return $url instanceof SymfonyRedirect ? $url : Redirect::away($url);
+        return $url instanceof RedirectResponse ? $url : Redirect::url($url);
     }
 }

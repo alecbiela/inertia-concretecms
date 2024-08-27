@@ -14,8 +14,13 @@ use Mockery\Adapter\Phpunit\MockeryTestCase as PHPUnitTestCase;
 use ReflectionProperty;
 use Package;
 
-abstract class TestCase extends PHPUnitTestCase
+use Concrete\Core\Application\ApplicationAwareInterface;
+use Concrete\Core\Application\ApplicationAwareTrait;
+
+abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInterface
 {
+    use ApplicationAwareTrait;
+
     protected function getPackageProviders($app): array
     {
         return [
@@ -53,8 +58,7 @@ abstract class TestCase extends PHPUnitTestCase
     /** @returns TestResponse|LegacyTestResponse */
     protected function makeMockRequest($view)
     {
-        $app = Application::getFacadeApplication();
-        $router = $app->make('router');
+        $router = $this->app->make('router');
         $router->get('/example-url', function () use ($view) {
             return $view;
         });
