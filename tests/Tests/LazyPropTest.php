@@ -3,7 +3,7 @@
 namespace Inertia\Tests;
 
 use Inertia\LazyProp;
-use Illuminate\Http\Request;
+use Concrete\Core\Http\Request;
 
 class LazyPropTest extends TestCase
 {

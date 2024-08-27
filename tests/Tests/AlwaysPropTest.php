@@ -3,7 +3,7 @@
 namespace Inertia\Tests;
 
 use Inertia\AlwaysProp;
-use Illuminate\Http\Request;
+use Concrete\Core\Http\Request;
 
 class AlwaysPropTest extends TestCase
 {
