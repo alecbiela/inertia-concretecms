@@ -3,8 +3,9 @@
 namespace Inertia\Tests\Stubs;
 
 use LogicException;
+use Inertia\Inertia;
 use Inertia\Middleware;
-use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class ExampleMiddleware extends Middleware
@@ -33,18 +34,20 @@ class ExampleMiddleware extends Middleware
     }
 
     /**
-     * Defines the props that are shared by default.
-     *
-     * @see https://inertiajs.com/shared-data
+     * Merges the existing shared props with the shared props defined in the test class
+     * Need to do it this way since the parent middleware is already being called, and calling
+     * parent::share() again will wipe out the error bag (since the flash bag was already emptied on the first go around)
      */
     public function share(Request $request): array
     {
-        return array_merge(parent::share($request), $this->shared);
+        return array_merge(Inertia::getShared(), $this->shared);
     }
 
     /**
-     * Determines what to do when an Inertia action returned with no response.
-     * By default, we'll redirect the user back to where they came from.
+     * By overriding the "onEmptyResponse" middleware method, we can change the behavior of the
+     * middleware on an empty response.
+     * The default behavior is to redirect the user "back" one level, but the test will verify
+     * that we can override it.
      */
     public function onEmptyResponse(Request $request, Response $response): Response
     {

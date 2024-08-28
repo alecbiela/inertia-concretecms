@@ -59,19 +59,23 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
             return $view;
         });
 
-        $req = Request::create('/example-url', 'GET');
-        return $this->processMockRequest($req);
+        return $this->processMockRequest('/example-url');
     }
 
     /**
      * Runs a request object through ConcreteCMS and returns the result
-     * @param Request $request - A Concrete CMS Request object
+     * @param string|Request $uri The URI of the request
+     * @param string $method The HTTP method of the request or NULL if request provided
+     * @param array $headers Additional headers to set on the request [header => value]
      * @return Concrete\Core\Http\Response (specific type varies based on factors like Redirects)
      */
-    protected function processMockRequest(Request $request)
+    protected function processMockRequest(mixed $uri = '/', mixed $method = 'GET', array $headers = [])
     {
+        // If $uri is already a request object, just set it, else create request
+        $request = ($uri instanceof Request) ? $uri : Request::create($uri, $method);
+        if(count($headers)) $request->headers->add($headers);
+
         $server = $this->app->make(ServerInterface::class);
-        $response = $server->handleRequest($request);
-        return $response;
+        return $server->handleRequest($request);
     }
 }

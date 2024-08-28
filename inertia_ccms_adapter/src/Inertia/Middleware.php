@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Concrete\Core\Http\Middleware\MiddlewareInterface;
 use Concrete\Core\Http\Middleware\DelegateInterface;
+use Concrete\Core\Support\Facade\Application;
 
 class Middleware implements MiddlewareInterface
 {
@@ -93,7 +94,7 @@ class Middleware implements MiddlewareInterface
             return $response;
         }
 
-        if ($request->method() === 'GET' && $request->headers->get(Header::VERSION, '') !== Inertia::getVersion()) {
+        if ($request->getMethod() === 'GET' && $request->headers->get(Header::VERSION, '') !== Inertia::getVersion()) {
             $response = $this->onVersionChange($request, $response);
         }
 
@@ -101,7 +102,7 @@ class Middleware implements MiddlewareInterface
             $response = $this->onEmptyResponse($request, $response);
         }
 
-        if ($response->getStatusCode() === 302 && in_array($request->method(), ['PUT', 'PATCH', 'DELETE'])) {
+        if ($response->getStatusCode() === 302 && in_array($request->getMethod(), ['PUT', 'PATCH', 'DELETE'])) {
             $response->setStatusCode(303);
         }
 
@@ -114,7 +115,8 @@ class Middleware implements MiddlewareInterface
      */
     public function onEmptyResponse(Request $request, Response $response): Response
     {
-        return Redirect::back();
+        $backURL = $request->headers->get('referer');
+        return Redirect::url($backURL);
     }
 
     /**
@@ -123,11 +125,9 @@ class Middleware implements MiddlewareInterface
      */
     public function onVersionChange(Request $request, Response $response): Response
     {
-        if ($request->hasSession()) {
-            $request->session()->reflash();
-        }
+        $fullUrl = $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath();
 
-        return Inertia::location($request->fullUrl());
+        return Inertia::location($fullUrl);
     }
 
     /**
@@ -138,24 +138,39 @@ class Middleware implements MiddlewareInterface
      */
     public function resolveValidationErrors(Request $request)
     {
-        if (! $request->hasSession() || ! $request->session()->has('errors')) {
+        $app = Application::getFacadeApplication();
+        $flash = $app->make('session')->getFlashBag();
+
+        // If there are no error bags, return an empty object
+        if (! $flash->has('errors')) {
             return (object) [];
         }
 
-        return (object) collect($request->session()->get('errors')->getBags())->map(function ($bag) {
-            return (object) collect($bag->messages())->map(function ($errors) {
-                return $errors[0];
-            })->toArray();
-        })->pipe(function ($bags) use ($request) {
-            if ($bags->has('default') && $request->headers->get(Header::ERROR_BAG)) {
-                return [$request->headers->get(Header::ERROR_BAG) => $bags->get('default')];
+        // This converts the Concrete ErrorList objects into an array of error bags
+        // $bagArray is an array of ['scope' => object{$field = 'message'}]
+        $errorBags = $flash->get('errors');
+        $bagArray = array();
+        foreach($errorBags as $name=>$bag){
+            $errors = array();
+            foreach($bag->getList() as $e){
+                $errors[$e->getField()->getFieldElementName()] = $e->getMessage();
             }
+            $bagArray[$name] = (object) $errors;
+        }
 
-            if ($bags->has('default')) {
-                return $bags->get('default');
+        // If we have a default error scope
+        if(isset($bagArray['default'])){
+            // If the request specifies a custom name for the error bag, use it instead of default
+            if($request->headers->get(Header::ERROR_BAG)){
+                $bagArray[$request->headers->get(Header::ERROR_BAG)] = $bagArray['default'];
+                unset($bagArray['default']);
+            } else {
+                // Pull the "default" scope out so we can just access errors like $errorList->error
+                $bagArray = $bagArray['default'];
             }
+        }
 
-            return $bags->toArray();
-        });
+        // Cast the array to an object and return it
+        return (object) $bagArray;
     }
 }
