@@ -74,6 +74,7 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
         // If $uri is already a request object, just set it, else create request
         $request = ($uri instanceof Request) ? $uri : Request::create($uri, $method);
         if(count($headers)) $request->headers->add($headers);
+        Request::setInstance($request);
 
         $server = $this->app->make(ServerInterface::class);
         return $server->handleRequest($request);

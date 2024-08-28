@@ -9,17 +9,9 @@ use Inertia\Middleware;
 use Inertia\Support\Header;
 
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
-use Concrete\Core\Support\Facade\Application;
 use Concrete\Core\Http\Request;
-use Concrete\Core\Http\ServerInterface;
 use Concrete\Core\Routing\RedirectResponse;
-
-use Illuminate\Support\MessageBag;
-use Illuminate\Support\ViewErrorBag;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Session;
 use Inertia\Tests\Stubs\ExampleMiddleware;
-use Illuminate\Session\Middleware\StartSession;
 
 class MiddlewareTest extends TestCase
 {
