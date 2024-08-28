@@ -8,7 +8,8 @@ use Inertia\ServiceProvider;
 
 use Illuminate\Testing\TestResponse;
 
-use Concrete\Support\Facade\Application;
+use Concrete\Core\Support\Facade\Application;
+use Concrete\Core\Http\Request;
 use Concrete\Core\View\View;
 use Mockery\Adapter\Phpunit\MockeryTestCase as PHPUnitTestCase;
 use ReflectionProperty;
@@ -16,6 +17,7 @@ use Package;
 
 use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Application\ApplicationAwareTrait;
+use Concrete\Core\Http\ServerInterface;
 
 abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInterface
 {
@@ -34,6 +36,9 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
 
         //View::addLocation(__DIR__.'/Stubs');
 
+        // Enables use of $this->app in TestCase and Unit Tests that extend it
+        $this->setApplication(Application::getFacadeApplication());
+
         Inertia::setRootView('welcome');
 
         $pkg = Package::getByHandle('inertia_ccms_adapter');
@@ -43,19 +48,10 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
     }
 
     /**
-     * @throws LogicException
+     * Create, then execute a mock GET request to URI "/"
+     * @param Inertia\Response $view - A response returned by Inertia::render
+     * @return Concrete\Core\Http\Response
      */
-    protected function getTestResponseClass(): string
-    {
-        // Laravel >= 7.0
-        if (class_exists(TestResponse::class)) {
-            return TestResponse::class;
-        }
-
-        throw new LogicException('Could not detect TestResponse class.');
-    }
-
-    /** @returns TestResponse|LegacyTestResponse */
     protected function makeMockRequest($view)
     {
         $router = $this->app->make('router');
@@ -63,23 +59,19 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
             return $view;
         });
 
-        return $this->get('/example-url');
+        $req = Request::create('/example-url', 'GET');
+        return $this->processMockRequest($req);
     }
 
-
-    protected static function setNonPublicPropertyValues(object $object, array $properties): void
+    /**
+     * Runs a request object through ConcreteCMS and returns the result
+     * @param Request $request - A Concrete CMS Request object
+     * @return Concrete\Core\Http\Response (specific type varies based on factors like Redirects)
+     */
+    protected function processMockRequest(Request $request)
     {
-        foreach ($properties as $propertyName => $propertyValue) {
-            self::setNonPublicPropertyValue($object, $propertyName, $propertyValue);
-        }
-    }
-
-    protected static function setNonPublicPropertyValue(object $object, string $propertyName, $propertyValue): void
-    {
-        $property = new ReflectionProperty($object, $propertyName);
-        if (PHP_VERSION_ID < 80100) { // As of PHP 8.1.0, calling this method has no effect
-            $property->setAccessible(true);
-        }
-        $property->setValue($object, $propertyValue);
+        $server = $this->app->make(ServerInterface::class);
+        $response = $server->handleRequest($request);
+        return $response;
     }
 }
