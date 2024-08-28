@@ -2,24 +2,15 @@
 
 namespace Inertia;
 
-use LogicException;
-use ReflectionException;
 use Inertia\Ssr\Gateway;
 use Inertia\Ssr\HttpGateway;
 use Inertia\Support\Header;
-use Inertia\Middleware as InertiaMiddleware;
-
-use Concrete\Core\Http\Request;
-use Concrete\Core\Routing\Router;
-use Concrete\Core\Http\ServerInterface;
-use Package;
-
+use Inertia\Middleware;
 use InertiaRouter\RouteList;
 
-//use Illuminate\View\FileViewFinder;
-//use Illuminate\Testing\TestResponse;
-
+use Package;
 use Concrete\Core\Foundation\Service\Provider as BaseServiceProvider;
+use Concrete\Core\Http\ServerInterface;
 
 class ServiceProvider extends BaseServiceProvider
 {
@@ -41,17 +32,8 @@ class ServiceProvider extends BaseServiceProvider
         require_once __DIR__ . '/helpers.php';
         
         /**
-         * TODO: Testing macros and console command support
+         * TODO: console command support
          */
-        //$this->registerTestingMacros();
-
-        // $this->app->bind('inertia.testing.view-finder', function ($app) {
-        //     return new FileViewFinder(
-        //         $app['files'],
-        //         $app['config']->get('inertia.testing.page_paths'),
-        //         $app['config']->get('inertia.testing.page_extensions')
-        //     );
-        // });
 
         // $this->registerConsoleCommands();
     }
@@ -59,7 +41,7 @@ class ServiceProvider extends BaseServiceProvider
     protected function registerMiddleware(): void
     {
         $server = $this->app->make(ServerInterface::class);
-        $server->addMiddleware($this->app->make(InertiaMiddleware::class));
+        $server->addMiddleware($this->app->make(Middleware::class));
     }
 
     protected function registerRoutes(): void 
@@ -82,21 +64,7 @@ class ServiceProvider extends BaseServiceProvider
         ]);
     }
 
-    /**
-     * @throws ReflectionException|LogicException
-     */
-    // protected function registerTestingMacros(): void
-    // {
-    //     if (class_exists(TestResponse::class)) {
-    //         TestResponse::mixin(new TestResponseMacros());
-
-    //         return;
-    //     }
-
-    //     throw new LogicException('Could not detect TestResponse class.');
-    // }
-
-    private function mergeConfigFrom($file, $key){
+    protected function mergeConfigFrom($file, $key){
         // Load configuration values from file
         $cfg = include $file;
         $pkg = Package::getByHandle('inertia_ccms_adapter');
