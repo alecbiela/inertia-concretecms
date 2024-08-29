@@ -1,7 +1,4 @@
 <?php
-/**
- * TODO: refactor this test.
- */
 
 namespace Inertia\Tests\Testing;
 

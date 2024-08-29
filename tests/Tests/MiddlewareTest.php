@@ -255,28 +255,4 @@ class MiddlewareTest extends TestCase
         $foundRoot = (strpos($response->getContent(), 'id="welcome"') !== false);
         $this->assertTrue($foundRoot);
     }
-
-    /**
-     * Prepares an endpoint at "/" for calling by the mock request
-     * @param mixed         $version   The Inertia version
-     * @param array         $shared    Array of shared props
-     * @param Closure|null  $callback  A custom callback function to execute on the route
-     * @param string|null   $method    The HTTP method to bind to (default: GET)
-     */
-    private function prepareMockEndpoint($version = null, $shared = [], $middleware = null, $callback = null, $method = 'GET'): \Concrete\Core\Routing\RouteBuilder
-    {
-        if (is_null($middleware)) {
-            $middleware = new ExampleMiddleware($version, $shared);
-        }
-
-        $router = $this->app->make('router');
-        if(is_null($callback)){
-            return $router->$method('/', function() {
-                $request = Request::getInstance();
-                return Inertia::render('User/Edit', ['user' => ['name' => 'Jonathan']])->toResponse($request);
-            })->addMiddleware($middleware);
-        } else {
-            return $router->$method('/', $callback)->addMiddleware($middleware);
-        }
-    }
 }

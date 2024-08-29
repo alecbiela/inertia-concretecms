@@ -118,17 +118,17 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
     /**
      * Asserts that a response that was returned is a valid Inertia response
      * This assert is unit tested in Testing\TestResponseMacrosTest
-     * Unlike Laravel, this does NOT return a chainable TestResponse class, because one doesn't exist.
+     * Returns the AssertableInertia object generated from the response
      */
     protected function assertInertia($response, Closure $callback = null)
     {
         // Fails within this method if not valid inertia
         $ai = AssertableInertia::fromResponse($response);
 
-        if(is_null($callback)) return true;
+        if(is_null($callback)) return $ai;
 
         $callback($ai);
-        return true;
+        return $ai;
     }
 
     public function inertiaPage()
