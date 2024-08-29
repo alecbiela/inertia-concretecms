@@ -2,39 +2,33 @@
 
 namespace Inertia\Tests;
 
+use Closure;
 use LogicException;
 use Inertia\Inertia;
+use Inertia\Middleware;
 use Inertia\ServiceProvider;
-
-use Illuminate\Testing\TestResponse;
-
-use Concrete\Core\Support\Facade\Application;
-use Concrete\Core\Http\Request;
-use Concrete\Core\View\View;
-use Mockery\Adapter\Phpunit\MockeryTestCase as PHPUnitTestCase;
-use ReflectionProperty;
+use Inertia\Support\Header;
+use Inertia\Testing\AssertableInertia;
+use Inertia\Tests\Stubs\ExampleMiddleware;
 use Package;
-
 use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Application\ApplicationAwareTrait;
+use Concrete\Core\Http\Request;
 use Concrete\Core\Http\ServerInterface;
+use Concrete\Core\Support\Facade\Application;
+use Mockery\Adapter\Phpunit\MockeryTestCase as PHPUnitTestCase;
+use PHPUnit\Framework\AssertionFailedError;
+use Symfony\Component\Finder\Finder as FileViewFinder;
 
 abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInterface
 {
     use ApplicationAwareTrait;
 
-    protected function getPackageProviders($app): array
-    {
-        return [
-            ServiceProvider::class,
-        ];
-    }
+    protected $config;
 
     public function setUp(): void
     {
         parent::setUp();
-
-        //View::addLocation(__DIR__.'/Stubs');
 
         // Enables use of $this->app in TestCase and Unit Tests that extend it
         $this->setApplication(Application::getFacadeApplication());
@@ -45,21 +39,62 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
         $cfg = $pkg->getFileConfig();
         $cfg->save('inertia.testing.ensure_pages_exist', false);
         $cfg->save('inertia.testing.page_paths', [realpath(__DIR__)]);
+        $this->config = $cfg;
+
+        $this->app->bind('inertia.testing.view-finder', function ($app) use ($cfg) {
+            $fv = new FileViewFinder();
+            $fv->ignoreUnreadableDirs();
+
+            $paths = array() + $cfg->get('inertia.testing.page_paths');
+            $exts = array() + $cfg->get('inertia.testing.page_extensions');
+
+            if(empty($paths)) {
+                $fv->in(DIR_BASE)
+                ->exclude('concrete')
+                ->exclude('updates')
+                ->exclude('node_modules')
+                ->exclude('application/files');
+            } else {
+                $fv->in($paths);
+            }
+
+            if(!empty($exts)){
+                foreach($exts as $ext){
+                    $fv->name('*.'.$ext);
+                }    
+            }
+
+            return $fv;
+        });
     }
 
     /**
-     * Create, then execute a mock GET request to URI "/"
-     * @param Inertia\Response $view - A response returned by Inertia::render
-     * @return Concrete\Core\Http\Response
+     * Prepares an endpoint at "/" for calling by the mock request
+     * @param mixed         $version   The Inertia version
+     * @param array         $shared    Array of shared props
+     * @param Closure|null  $callback  A custom callback function to execute on the route
+     * @param string|null   $method    The HTTP method to bind to (default: GET)
      */
-    protected function makeMockRequest($view)
+    protected function prepareMockEndpoint($version = null, $shared = [], $middleware = null, $callback = null, $method = 'GET'): \Concrete\Core\Routing\RouteBuilder
     {
-        $router = $this->app->make('router');
-        $router->get('/example-url', function () use ($view) {
-            return $view;
-        });
+        if (is_null($version)) {
+            $version = Request::getInstance()->headers->get(Header::VERSION, '');
+            Inertia::version($version);
+        }
 
-        return $this->processMockRequest('/example-url');
+        if (is_null($middleware)) {
+            $middleware = new ExampleMiddleware($version, $shared);
+        }
+
+        $router = $this->app->make('router');
+        if(is_null($callback)){
+            return $router->$method('/', function() {
+                $request = Request::getInstance();
+                return Inertia::render('User/Edit', ['user' => ['name' => 'Jonathan']])->toResponse($request);
+            })->addMiddleware($middleware);
+        } else {
+            return $router->$method('/', $callback)->addMiddleware($middleware);
+        }
     }
 
     /**
@@ -78,5 +113,28 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
 
         $server = $this->app->make(ServerInterface::class);
         return $server->handleRequest($request);
+    }
+
+    /**
+     * Asserts that a response that was returned is a valid Inertia response
+     * This assert is unit tested in Testing\TestResponseMacrosTest
+     * Unlike Laravel, this does NOT return a chainable TestResponse class, because one doesn't exist.
+     */
+    protected function assertInertia($response, Closure $callback = null)
+    {
+        // Fails within this method if not valid inertia
+        $ai = AssertableInertia::fromResponse($response);
+
+        if(is_null($callback)) return true;
+
+        $callback($ai);
+        return true;
+    }
+
+    public function inertiaPage()
+    {
+        return function () {
+            return AssertableInertia::fromTestResponse($this)->toArray();
+        };
     }
 }

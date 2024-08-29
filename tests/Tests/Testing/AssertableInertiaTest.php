@@ -1,43 +1,59 @@
 <?php
+/**
+ * TODO: refactor this test.
+ */
 
 namespace Inertia\Tests\Testing;
 
 use Inertia\Inertia;
+use Inertia\Middleware;
+use Inertia\Support\Header;
 use Inertia\Tests\TestCase;
 use PHPUnit\Framework\AssertionFailedError;
+use Concrete\Core\Http\Request;
 
 class AssertableInertiaTest extends TestCase
 {
     /** @test */
     public function the_view_is_served_by_inertia(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('foo');
+        });
+        
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
-        $response->assertInertia();
+        $this->assertInertia($response);
     }
 
     /** @test */
     public function the_view_is_not_served_by_inertia(): void
     {
-        $response = $this->makeMockRequest(view('welcome'));
-        $response->assertOk(); // Make sure we can render the built-in Orchestra 'welcome' view..
+        // No test endpoint - we're just hitting the site's home page
+        $response = $this->processMockRequest();
+
+        $this->assertTrue($response->isOk());
 
         $this->expectException(AssertionFailedError::class);
         $this->expectExceptionMessage('Not a valid Inertia response.');
 
-        $response->assertInertia();
+        $this->assertInertia($response);
     }
 
     /** @test */
     public function the_component_matches(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('foo');
+        });
+        
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
-        $response->assertInertia(function ($inertia) {
+        $this->assertInertia($response, function ($inertia) {
             $inertia->component('foo');
         });
     }
@@ -45,14 +61,18 @@ class AssertableInertiaTest extends TestCase
     /** @test */
     public function the_component_does_not_match(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('foo');
+        });
+
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
         $this->expectException(AssertionFailedError::class);
         $this->expectExceptionMessage('Unexpected Inertia page component.');
 
-        $response->assertInertia(function ($inertia) {
+        $this->assertInertia($response, function ($inertia) {
             $inertia->component('bar');
         });
     }
@@ -60,12 +80,17 @@ class AssertableInertiaTest extends TestCase
     /** @test */
     public function the_component_exists_on_the_filesystem(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('Stubs/ExamplePage')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('Stubs/ExamplePage');
+        });
 
-        config()->set('inertia.testing.ensure_pages_exist', true);
-        $response->assertInertia(function ($inertia) {
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
+
+        $this->config->set('inertia.testing.ensure_pages_exist', true);
+
+        $this->assertInertia($response, function ($inertia) {
             $inertia->component('Stubs/ExamplePage');
         });
     }
@@ -73,15 +98,20 @@ class AssertableInertiaTest extends TestCase
     /** @test */
     public function the_component_does_not_exist_on_the_filesystem(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('foo');
+        });
 
-        config()->set('inertia.testing.ensure_pages_exist', true);
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
+
+        $this->config->set('inertia.testing.ensure_pages_exist', true);
+
         $this->expectException(AssertionFailedError::class);
         $this->expectExceptionMessage('Inertia page component file [foo] does not exist.');
 
-        $response->assertInertia(function ($inertia) {
+        $this->assertInertia($response, function ($inertia) {
             $inertia->component('foo');
         });
     }
@@ -89,15 +119,20 @@ class AssertableInertiaTest extends TestCase
     /** @test */
     public function it_can_force_enable_the_component_file_existence(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('foo');
+        });
 
-        config()->set('inertia.testing.ensure_pages_exist', false);
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
+
+        $this->config->set('inertia.testing.ensure_pages_exist', false);
+
         $this->expectException(AssertionFailedError::class);
         $this->expectExceptionMessage('Inertia page component file [foo] does not exist.');
 
-        $response->assertInertia(function ($inertia) {
+        $this->assertInertia($response, function ($inertia) {
             $inertia->component('foo', true);
         });
     }
@@ -105,13 +140,17 @@ class AssertableInertiaTest extends TestCase
     /** @test */
     public function it_can_force_disable_the_component_file_existence_check(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('foo');
+        });
 
-        config()->set('inertia.testing.ensure_pages_exist', true);
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
-        $response->assertInertia(function ($inertia) {
+        $this->config->set('inertia.testing.ensure_pages_exist', true);
+
+        $this->assertInertia($response, function ($inertia) {
             $inertia->component('foo', false);
         });
     }
@@ -119,16 +158,20 @@ class AssertableInertiaTest extends TestCase
     /** @test */
     public function the_component_does_not_exist_on_the_filesystem_when_it_does_not_exist_relative_to_any_of_the_given_paths(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('fixtures/ExamplePage')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('fixtures/ExamplePage');
+        });
 
-        config()->set('inertia.testing.ensure_pages_exist', true);
-        config()->set('inertia.testing.page_paths', [realpath(__DIR__)]);
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
+
+        $this->config->set('inertia.testing.ensure_pages_exist', true);
+        $this->config->set('inertia.testing.page_paths', [realpath(__DIR__)]);
         $this->expectException(AssertionFailedError::class);
         $this->expectExceptionMessage('Inertia page component file [fixtures/ExamplePage] does not exist.');
 
-        $response->assertInertia(function ($inertia) {
+        $this->assertInertia($response, function ($inertia) {
             $inertia->component('fixtures/ExamplePage');
         });
     }
@@ -136,43 +179,55 @@ class AssertableInertiaTest extends TestCase
     /** @test */
     public function the_component_does_not_exist_on_the_filesystem_when_it_does_not_have_one_of_the_configured_extensions(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('fixtures/ExamplePage')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('Stubs/ExamplePage');
+        });
 
-        config()->set('inertia.testing.ensure_pages_exist', true);
-        config()->set('inertia.testing.page_extensions', ['bin', 'exe', 'svg']);
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
+
+        $this->config->set('inertia.testing.ensure_pages_exist', true);
+        $this->config->set('inertia.testing.page_extensions', ['bin', 'exe', 'svg']);
         $this->expectException(AssertionFailedError::class);
-        $this->expectExceptionMessage('Inertia page component file [fixtures/ExamplePage] does not exist.');
+        $this->expectExceptionMessage('Inertia page component file [Stubs/ExamplePage] does not exist.');
 
-        $response->assertInertia(function ($inertia) {
-            $inertia->component('fixtures/ExamplePage');
+        $this->assertInertia($response, function ($inertia) {
+            $inertia->component('Stubs/ExamplePage');
         });
     }
 
     /** @test */
     public function the_page_url_matches(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('foo');
+        });
+        
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
-        $response->assertInertia(function ($inertia) {
-            $inertia->url('/example-url');
+        $this->assertInertia($response, function ($inertia) {
+            $inertia->url('/');
         });
     }
 
     /** @test */
     public function the_page_url_does_not_match(): void
     {
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint(null, [], null, function(){
+            return Inertia::render('foo');
+        });
+        
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
         $this->expectException(AssertionFailedError::class);
         $this->expectExceptionMessage('Unexpected Inertia page url.');
 
-        $response->assertInertia(function ($inertia) {
+        $this->assertInertia($response, function ($inertia) {
             $inertia->url('/invalid-page');
         });
     }
@@ -180,13 +235,17 @@ class AssertableInertiaTest extends TestCase
     /** @test */
     public function the_asset_version_matches(): void
     {
-        Inertia::version('example-version');
 
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint('example-version', [], null, function(){
+            return Inertia::render('foo');
+        });
+        
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true,
+            Header::VERSION => 'example-version'
+        ]);
 
-        $response->assertInertia(function ($inertia) {
+        $this->assertInertia($response, function ($inertia) {
             $inertia->version('example-version');
         });
     }
@@ -194,16 +253,20 @@ class AssertableInertiaTest extends TestCase
     /** @test */
     public function the_asset_version_does_not_match(): void
     {
-        Inertia::version('example-version');
 
-        $response = $this->makeMockRequest(
-            Inertia::render('foo')
-        );
+        $this->prepareMockEndpoint('example-version', [], null, function(){
+            return Inertia::render('foo');
+        });
+        
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true,
+            Header::VERSION => 'example-version'
+        ]);
 
         $this->expectException(AssertionFailedError::class);
         $this->expectExceptionMessage('Unexpected Inertia asset version.');
 
-        $response->assertInertia(function ($inertia) {
+        $this->assertInertia($response, function ($inertia) {
             $inertia->version('different-version');
         });
     }
