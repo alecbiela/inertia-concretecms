@@ -6,7 +6,7 @@ use Closure;
 use Core;
 use Page;
 use Inertia\Support\Header;
-use Concrete\Core\Utility\Service\Arrays as Arr;
+use Concrete\Core\Utility\Service\Arrays as ArraysService;
 use Illuminate\Support\Str;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Support\Facade\Application as App;
@@ -15,17 +15,17 @@ use Illuminate\Support\Traits\Macroable;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Concrete\Core\Http\ResponseFactory;
-use Concrete\Core\Application\ApplicationAwareTrait;
 
 class Response implements Responsable
 {
-    use Macroable, ApplicationAwareTrait;
+    use Macroable;
 
     protected $component;
     protected $props;
     protected $rootView;
     protected $version;
     protected $viewData = [];
+    protected $app;
 
     /**
      * @param array|Arrayable $props
@@ -36,6 +36,7 @@ class Response implements Responsable
         $this->props = $props instanceof Arrayable ? $props->toArray() : $props;
         $this->rootView = $rootView;
         $this->version = $version;
+        $this->app = App::getFacadeApplication();
     }
 
     /**
@@ -91,17 +92,18 @@ class Response implements Responsable
         $props = $this->resolveAlwaysProps($props);
         $props = $this->evaluateProps($props, $request);
 
+        // Try replacing getPath with getRequestUri() to accommodate for subpath
         $page = [
             'component' => $this->component,
             'props' => $props,
-            'url' => Str::start(Str::after($request->getPath(), $request->getSchemeAndHttpHost()), '/'),
+            'url' => Str::start(Str::after($request->getRequestUri(), $request->getSchemeAndHttpHost()), '/'),
             'version' => $this->version,
         ];
 
         /**
          * Use the Concrete CMS Response Factory to build and send a response
          */
-        $rf = Core::make(ResponseFactory::class);
+        $rf = \Core::make(ResponseFactory::class);
 
         // If Inertia, send a JSON response with the data
         if ($request->headers->get(Header::INERTIA)) {
@@ -111,8 +113,13 @@ class Response implements Responsable
         // If not Inertia (e.g. first-time page load) send a CMS page response
         $request->request->add($this->viewData + ['page' => $page]);
         $request->request->add(['rootView'=>$this->rootView]);
+
         $c = Page::getByPath($request->getPath());
-        return $rf->collection($c);
+        if(is_null($c->getCollectionID())) $c = Page::getByID(Page::getHomePageID());
+        $controller = $c->getPageController();
+        $request->setCurrentPage($c);
+
+        return $rf->controller($controller);
     }
 
     /**
@@ -131,10 +138,45 @@ class Response implements Responsable
         $only = array_filter(explode(',', $request->headers->get(Header::PARTIAL_ONLY, '')));
         $except = array_filter(explode(',', $request->headers->get(Header::PARTIAL_EXCEPT, '')));
 
-        $props = $only ? Arr::only($props, $only) : $props;
+        if($only){
+            // Functionally equivalent to Arr::only($props, $only)
+            // Taken from Laravel\Framework\Illuminate\Collections\Arr (MIT License)
+            // https://github.com/translation/laravel/blob/master/LICENSE
+            $props = array_intersect_key($props, array_flip((array) $only));
+        }
 
         if ($except) {
-            Arr::forget($props, $except);
+            // Functionally equivalent to Arr::forget($props, $except)
+            // Taken from Laravel\Framework\Illuminate\Collections\Arr (MIT License)
+            // https://github.com/translation/laravel/blob/master/LICENSE
+            $original = &$props;
+            $keys = (array) $except;
+
+            foreach ($keys as $key) {
+                // if the exact key exists in the top-level, remove it
+                //if (static::exists($props, $key)) {
+                if(array_key_exists($key, $props)) {
+                    unset($props[$key]);
+                    continue;
+                }
+
+                $parts = explode('.', $key);
+
+                // clean up before each pass
+                $props = &$original;
+
+                while (count($parts) > 1) {
+                    $part = array_shift($parts);
+                    
+                    if (isset($props[$part]) && is_array($props[$part]) || $props[$part] instanceof ArrayAccess) {
+                        $props = &$props[$part];
+                    } else {
+                        continue 2;
+                    }
+                }
+
+                unset($props[array_shift($parts)]);
+            }
         }
 
         return $props;
@@ -183,7 +225,35 @@ class Response implements Responsable
             }
 
             if ($unpackDotProps && str_contains($key, '.')) {
-                Arr::set($props, $key, $value);
+                // Functionally equivalent to Arr::set($props, $key, $value)
+                $array = &$props;
+                $subKey = $key;
+
+                if (is_null($subKey)) {
+                    return $array = $value;
+                }
+
+                $keys = explode('.', $subKey);
+
+                foreach ($keys as $i => $subKey) {
+                    if (count($keys) === 1) {
+                        break;
+                    }
+
+                    unset($keys[$i]);
+
+                    // If the key doesn't exist at this depth, we will just create an empty array
+                    // to hold the next value, allowing us to create the arrays to hold final
+                    // values at the correct depth. Then we'll keep digging into the array.
+                    if (! isset($array[$subKey]) || ! is_array($array[$subKey])) {
+                        $array[$subKey] = [];
+                    }
+
+                    $array = &$array[$subKey];
+                }
+
+                $array[array_shift($keys)] = $value;            
+
                 unset($props[$key]);
             } else {
                 $props[$key] = $value;

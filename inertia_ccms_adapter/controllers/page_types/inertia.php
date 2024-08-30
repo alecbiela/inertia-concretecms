@@ -20,5 +20,22 @@ class Inertia extends PageTypeController {
         $this->set('page', $page);
         $this->set('rootView', $rootView);
     }
+
+    /**
+     * Overriding this prevents redirecting via 301 or 404 errors
+     * when using the home page with an alternate page path (such as a component route)
+     * @see Concrete\Core\Page\Controller\PageController
+     */
+    public function validateRequest()
+    {
+        if (isset($this->requestValidated)) {
+            return $this->requestValidated;
+        }
+
+        $valid = true;
+        $this->requestValidated = $valid;
+
+        return $valid;
+    }
 }
 ?>

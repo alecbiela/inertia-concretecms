@@ -15,6 +15,7 @@ use Concrete\Core\Application\ApplicationAwareInterface;
 use Concrete\Core\Application\ApplicationAwareTrait;
 use Concrete\Core\Http\Request;
 use Concrete\Core\Http\ServerInterface;
+use Concrete\Core\Cache\Cache;
 use Concrete\Core\Support\Facade\Application;
 use Mockery\Adapter\Phpunit\MockeryTestCase as PHPUnitTestCase;
 use PHPUnit\Framework\AssertionFailedError;
@@ -40,6 +41,10 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
         $cfg->save('inertia.testing.ensure_pages_exist', false);
         $cfg->save('inertia.testing.page_paths', [realpath(__DIR__)]);
         $this->config = $cfg;
+
+        // We need to disable caching, since Concrete will cache the Inertia page responses
+        // causing some tests to fail because the response was cached from the previous test
+        Cache::disableAll();
 
         $this->app->bind('inertia.testing.view-finder', function ($app) use ($cfg) {
             $fv = new FileViewFinder();
@@ -102,17 +107,49 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
      * @param string|Request $uri The URI of the request
      * @param string $method The HTTP method of the request or NULL if request provided
      * @param array $headers Additional headers to set on the request [header => value]
+     * @param array $server  Additional server globals to set on the request [global => value]
      * @return Concrete\Core\Http\Response (specific type varies based on factors like Redirects)
      */
-    protected function processMockRequest(mixed $uri = '/', mixed $method = 'GET', array $headers = [])
+    protected function processMockRequest(mixed $uri = '/', mixed $method = 'GET', array $headers = [], array $server = [])
     {
+        $baseServer = [
+            'HTTP_HOST' => 'www.requestdomain.com', 
+            'SCRIPT_NAME' => '/path/to/server/index.php',
+            'REQUEST_URI' => $uri
+        ];
+
         // If $uri is already a request object, just set it, else create request
-        $request = ($uri instanceof Request) ? $uri : Request::create($uri, $method);
+        if($uri instanceof Request) {
+            $request = $uri;
+        } else {
+            $request = Request::create($uri, $method, [], [], [], $baseServer + $server, null);
+        }
+
         if(count($headers)) $request->headers->add($headers);
         Request::setInstance($request);
 
         $server = $this->app->make(ServerInterface::class);
         return $server->handleRequest($request);
+    }
+
+    /**
+     * Similar to the previous function, but only creates the request object, and does not produce a response
+     * @param $uri must be a string
+     * @return Request
+     */
+    protected function createMockRequest(string $uri = '/', mixed $method = 'GET', array $headers = [], array $server = []) {
+        $baseServer = [
+            'HTTP_HOST' => 'www.requestdomain.com', 
+            'SCRIPT_NAME' => '/path/to/server/index.php',
+            'REQUEST_URI' => $uri
+        ];
+
+        $request = Request::create($uri, $method, [], [], [], $baseServer + $server, null);
+
+        if(count($headers)) $request->headers->add($headers);
+        Request::setInstance($request);
+
+        return $request;
     }
 
     /**
@@ -134,7 +171,7 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
     public function inertiaPage()
     {
         return function () {
-            return AssertableInertia::fromTestResponse($this)->toArray();
+            return AssertableInertia::fromResponse($this)->toArray();
         };
     }
 }

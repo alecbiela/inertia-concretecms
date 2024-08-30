@@ -58,6 +58,7 @@ class Controller extends Package
         // Set the home page's type to the new Inertia page type
         $hp = Page::getByID(Page::getHomePageID());
         $hp->setPageType($pageType);
+        $hp->update(['cCacheFullPageContent'=> 0 ]);
 
         // Install page theme if not installed
         $theme = Theme::getByHandle('inertia');
