@@ -32,12 +32,12 @@ Stub.
 ### Routing
 The `Route::Inertia()` method is not supported at this time. Support may be added in the future.  
 Certain top-level routes are already registered by Concrete and it is recommended that you avoid defining custom routes to or underneath them. These are:  
--`/account`
--`/dashboard`
--`/desktop`
--`/download_file`
--`/login`
--`/register`
+*`/account`
+*`/dashboard`
+*`/desktop`
+*`/download_file`
+*`/login`
+*`/register`
 
 ### Title & meta
 Stub.
