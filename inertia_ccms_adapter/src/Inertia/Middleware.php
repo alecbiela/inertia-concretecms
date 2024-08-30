@@ -37,9 +37,9 @@ class Middleware implements MiddlewareInterface
         }
 
         // TODO: Rework this for Vite-based applications (check all frontend package paths for vue3, svelte, react)
-        if (file_exists($manifest = public_path('build/manifest.json'))) {
-            return md5_file($manifest);
-        }
+        // if (file_exists($manifest = public_path('build/manifest.json'))) {
+        //     return md5_file($manifest);
+        // }
 
         return null;
     }
