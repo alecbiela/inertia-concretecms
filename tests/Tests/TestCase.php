@@ -35,6 +35,7 @@ abstract class TestCase extends PHPUnitTestCase implements ApplicationAwareInter
         $this->setApplication(Application::getFacadeApplication());
 
         Inertia::setRootView('welcome');
+        Inertia::flushShared();
 
         $pkg = Package::getByHandle('inertia_ccms_adapter');
         $cfg = $pkg->getFileConfig();

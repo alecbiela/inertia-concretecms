@@ -112,7 +112,7 @@ class ResponseFactoryTest extends TestCase
     public function test_the_version_can_be_a_closure(): void
     {
         $this->prepareMockEndpoint('b19a24ee5c287f42ee1d465dab77ab37', [], null, function() {
-            $this->assertSame('', Inertia::getVersion());
+            $this->assertSame('b19a24ee5c287f42ee1d465dab77ab37', Inertia::getVersion());
 
             Inertia::version(function () {
                 return md5('Inertia');
@@ -134,7 +134,8 @@ class ResponseFactoryTest extends TestCase
 
     public function test_shared_data_can_be_shared_from_anywhere(): void
     {
-        $this->prepareMockEndpoint(null, [], null, function() {
+
+        $this->prepareMockEndpoint('', [], null, function() {
             Inertia::share('foo', 'bar');
 
             return Inertia::render('User/Edit');
@@ -149,7 +150,10 @@ class ResponseFactoryTest extends TestCase
         $this->assertArrayHasKey('component', $json);
         $this->assertEquals($json['component'], 'User/Edit');
         $this->assertArrayHasKey('props', $json);
-        $this->assertEquals($json['props'], array('foo'=>'bar'));
+        $this->assertEquals($json['props'], [
+            'errors' => [],
+            'foo' => 'bar'
+        ]);
     }
 
     public function test_can_flush_shared_data(): void
