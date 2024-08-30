@@ -11,3 +11,5 @@ After installing Concrete and running `composer install` at the document root, r
 
 ### Test Scope
 These unit tests are meant to evaluate the functionality of the classes within the Concrete CMS / Inertia.js adapter package. To test other Concrete CMS functionality, use the test suite located in the 'tests' directory of the [Concrete CMS git repository](https://github.com/concretecms/concretecms).
+
+Additional unit tests will be developed in the future to cover integration with Concrete CMS routing and pages, namely testing how routing is handled in between Concrete and Inertia (in the cases where Concrete pages exist at URLs)

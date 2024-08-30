@@ -1,4 +1,9 @@
 <?php
+/**
+ * TODO: Refactor this test to use helper request/response 
+ * Then remove unneeded use statements.
+ * Also, $this->app
+ */
 
 namespace Inertia\Tests;
 
@@ -15,7 +20,6 @@ use Concrete\Core\Routing\Redirect;
 use Concrete\Core\Routing\Route;
 use Concrete\Core\Http\Request;
 use Illuminate\Contracts\Support\Arrayable;
-use Concrete\Core\Support\Facade\Application;
 
 class ResponseFactoryTest extends TestCase
 {
@@ -31,8 +35,9 @@ class ResponseFactoryTest extends TestCase
 
     public function test_location_response_for_inertia_requests(): void
     {
-        $req = Request::getInstance();
-        $req->headers->set(Header::INERTIA, true);
+        $req = $this->createMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
         $response = (new ResponseFactory())->location('https://inertiajs.com/');
 
@@ -43,8 +48,7 @@ class ResponseFactoryTest extends TestCase
 
     public function test_location_response_for_non_inertia_requests(): void
     {
-        $req = Request::getInstance();
-        $req->headers->set(Header::INERTIA, false);
+        $req = $this->createMockRequest('/', 'GET');
 
         $response = (new ResponseFactory())->location('https://inertiajs.com/');
 
@@ -55,8 +59,9 @@ class ResponseFactoryTest extends TestCase
 
     public function test_location_response_for_inertia_requests_using_redirect_response(): void
     {
-        $req = Request::getInstance();
-        $req->headers->set(Header::INERTIA, true);
+        $req = $this->createMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
         $redirect = Redirect::url('https://inertiajs.com/');
         $response = (new ResponseFactory())->location($redirect);
@@ -68,8 +73,7 @@ class ResponseFactoryTest extends TestCase
 
     public function test_location_response_for_non_inertia_requests_using_redirect_response(): void
     {
-        $req = Request::getInstance();
-        $req->headers->set(Header::INERTIA, false);
+        $req = $this->createMockRequest('/', 'GET');
         
         $redirect = Redirect::url('https://inertiajs.com/');
         $response = (new ResponseFactory())->location($redirect);
@@ -81,6 +85,7 @@ class ResponseFactoryTest extends TestCase
 
     public function test_location_redirects_are_not_modified(): void
     {
+        $req = $this->createMockRequest('/', 'GET');
         $response = (new ResponseFactory())->location('/foo');
 
         $this->assertInstanceOf(RedirectResponse::class, $response);
@@ -106,9 +111,7 @@ class ResponseFactoryTest extends TestCase
 
     public function test_the_version_can_be_a_closure(): void
     {
-        $app = Application::getFacadeApplication();
-        $router = $app->make('router');
-        $router->get('/', function () {
+        $this->prepareMockEndpoint('b19a24ee5c287f42ee1d465dab77ab37', [], null, function() {
             $this->assertSame('', Inertia::getVersion());
 
             Inertia::version(function () {
@@ -116,14 +119,11 @@ class ResponseFactoryTest extends TestCase
             });
 
             return Inertia::render('User/Edit');
-        })->addMiddleware(ExampleMiddleware::class);
-
-        $request = Request::getInstance();
-        $request->headers->set('X-Inertia', true);
-        $request->headers->set('X-Inertia-Version', 'b19a24ee5c287f42ee1d465dab77ab37');
-        $outRoute = $router->matchRoute($request)->getRoute();
-        $action = $router->resolveAction($outRoute);
-        $response = $action->execute($request, $outRoute, [])->toResponse($request);
+        });
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true,
+            Header::VERSION => 'b19a24ee5c287f42ee1d465dab77ab37'
+        ]);
 
         $this->assertTrue($response->isSuccessful());
 
@@ -134,19 +134,14 @@ class ResponseFactoryTest extends TestCase
 
     public function test_shared_data_can_be_shared_from_anywhere(): void
     {
-        $app = Application::getFacadeApplication();
-        $router = $app->make('router');
-        $router->get('/', function () {
+        $this->prepareMockEndpoint(null, [], null, function() {
             Inertia::share('foo', 'bar');
 
             return Inertia::render('User/Edit');
-        })->addMiddleware(ExampleMiddleware::class);
-
-        $request = Request::getInstance();
-        $request->headers->set('X-Inertia', true);
-        $outRoute = $router->matchRoute($request)->getRoute();
-        $action = $router->resolveAction($outRoute);
-        $response = $action->execute($request, $outRoute, [])->toResponse($request);
+        });
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
         $this->assertTrue($response->isSuccessful());
 
@@ -187,9 +182,9 @@ class ResponseFactoryTest extends TestCase
 
     public function test_will_accept_arrayabe_props()
     {
-        $app = Application::getFacadeApplication();
-        $router = $app->make('router');
-        $router->get('/', function () {
+        Inertia::flushShared();
+
+        $this->prepareMockEndpoint(null, [], null, function() {
             Inertia::share('foo', 'bar');
 
             return Inertia::render('User/Edit', new class() implements Arrayable {
@@ -200,13 +195,10 @@ class ResponseFactoryTest extends TestCase
                     ];
                 }
             });
-        })->addMiddleware(ExampleMiddleware::class);
-
-        $request = Request::getInstance();
-        $request->headers->set('X-Inertia', true);
-        $outRoute = $router->matchRoute($request)->getRoute();
-        $action = $router->resolveAction($outRoute);
-        $response = $action->execute($request, $outRoute, [])->toResponse($request);
+        });
+        $response = $this->processMockRequest('/', 'GET', [
+            Header::INERTIA => true
+        ]);
 
         $this->assertTrue($response->isSuccessful());
 
@@ -214,6 +206,9 @@ class ResponseFactoryTest extends TestCase
         $this->assertArrayHasKey('component', $json);
         $this->assertEquals($json['component'], 'User/Edit');
         $this->assertArrayHasKey('props', $json);
-        $this->assertEquals($json['props'], array('foo'=>'bar'));
+        $this->assertEquals($json['props'], [
+            'errors' => [],
+            'foo' => 'bar'
+        ]);
     }
 }
