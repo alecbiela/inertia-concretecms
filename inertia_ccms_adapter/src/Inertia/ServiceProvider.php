@@ -16,6 +16,9 @@ class ServiceProvider extends BaseServiceProvider
 {
     public function register(): void
     {
+        // Register global inertia helper functions
+        require_once __DIR__ . '/helpers.php';
+
         // Register app singletons to be used with $app->make
         $this->app->singleton(ResponseFactory::class);
         $this->app->bind(Gateway::class, HttpGateway::class);
@@ -28,9 +31,6 @@ class ServiceProvider extends BaseServiceProvider
         $this->registerMiddleware();
         $this->registerRoutes();
 
-        // Register global inertia helper functions
-        require_once __DIR__ . '/helpers.php';
-        
         /**
          * TODO: console command support
          */

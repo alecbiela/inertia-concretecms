@@ -8,13 +8,17 @@
     defined('C5_EXECUTE') or die('Access Denied');
 
     use Inertia\Inertia;
-    
+
+    // Shorthand routes
+    // inertia_route('/uri/of/route', 'ComponentName', ['propName' => 'Prop Value'], $router);
+
     $router->get('/', function() { 
         // Shorthand using helpers
         // return inertia('HomePage', ['propTest' => 'This is a prop']);
 
         return Inertia::render('HomePage', [
-            'propTest' => 'This is a prop'
+            'propTest' => 'This is a test prop'
         ]);
     });
+
 
