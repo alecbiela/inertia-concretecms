@@ -31,7 +31,7 @@ No major changes to the Inertia documentation.
 #### Root Template Data
 The `$page` variable is available directly inside of `inertia_ccms_adapter/themes/inertia/default.php`. It maintains the structure of the Laravel implementation.  
 
-The `withViewData()` method on `Inertia::render()` is not supported at this time. Support may be added in the future.
+You may also add additional page variables using the `withViewData()` method chained onto an Inertia render response. These will be available in the page template the same as `$page`, but will not be passed to the frontend framework.
 
 ### Redirects
 Stub.

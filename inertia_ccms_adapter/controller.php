@@ -30,7 +30,7 @@ class Controller extends Package
 
     public function getPackageDescription()
     {
-        return t('An adapter for Inertia.js to the ConcreteCMS backend. (Unofficial)');
+        return t('An adapter for Inertia.js to the Concrete CMS backend. (Unofficial)');
     }
 
     public function getPackageName()

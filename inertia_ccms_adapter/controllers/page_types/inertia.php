@@ -12,12 +12,15 @@ class Inertia extends PageTypeController {
     
     public function view()
     {
-        // Set the $page variable used in the template
-        $page = $this->request->request->get('page');
+        // View Params are set in Response.php - Array of viewData + page params
+        $vp = $this->request->request->get('viewParams');
+        if(!isset($vp)) $vp = array();
+        foreach($vp as $key => $val) {
+            $this->set($key, $val);
+        }
+
         $rootView = $this->request->request->get('rootView');
-        if(!isset($page)) $page = array();
         if(!isset($rootView)) $rootView = 'app';
-        $this->set('page', $page);
         $this->set('rootView', $rootView);
     }
 
