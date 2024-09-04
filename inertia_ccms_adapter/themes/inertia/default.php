@@ -2,15 +2,10 @@
 <!DOCTYPE html>
 <html lang="<?= Localization::activeLanguage(); ?>">
   <head>
-    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="<?= $this->getThemePath(); ?>/css/app.bundle.css" type="text/css" />
     <?php
-      View::element('header_required', [
-          'pageTitle' => isset($pageTitle) ? $pageTitle : '',
-          'pageDescription' => isset($pageDescription) ? $pageDescription : '',
-          'pageMetaKeywords' => isset($pageMetaKeywords) ? $pageMetaKeywords : ''
-      ]);
+      View::element('header_required', 'inertia_ccms_adapter');
     ?>
     <?php 
       /* Replaces @inertiaHead */

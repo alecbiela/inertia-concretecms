@@ -18,7 +18,7 @@ The root template for Inertia in this adapter is located at `inertia_ccms_adapte
 
 ### Client-side
 No major changes. **However,** when setting up your client-side scripts, there are two things to look out for:
-1. Ensure your build step outputs your bundle to "packages/inertia_ccms_adapter/themes/inertia/js/app.bundle.js".
+1. Ensure your build step outputs your bundle to "packages/inertia_ccms_adapter/themes/inertia/js/app.bundle.js" for javascript, and "packages/inertia_ccms_adapter/themes/inertia/css/app.bundle.css" for CSS.
 2. Do not put your frontend scripts in the "application/js" folder. This introduces some weird overriding of core CMS javascript.
 
 ## The Basics
@@ -34,7 +34,11 @@ The `$page` variable is available directly inside of `inertia_ccms_adapter/theme
 You may also add additional page variables using the `withViewData()` method chained onto an Inertia render response. These will be available in the page template the same as `$page`, but will not be passed to the frontend framework.
 
 ### Redirects
-Stub.
+Handling redirects is very similar to the Laravel implementation. You will need to include `use Concrete\Core\Routing\Redirect;` at the top of the file you want to redirect in. Then, in your method, write something like:  
+`return Redirect::url('/my_url')`
+
+#### 303 Response Code
+This is done for you. Since the `Redirect::url()` method in Concrete returns a 302 response, this is automatically converted to a 303 response by Inertia.
 
 ### Routing
 
@@ -68,20 +72,32 @@ $router->get('/', function(){
     return Inertia::render('HomePage'); 
 })->setName('home');
 ```
+  
+There's no real "easy" way (to my knowledge) to get a route by its name in Concrete. This adapter includes a static `getUriByName` method in `InertiaRouter\InertiaRouter` that can be used to handle getting routes by the names you set:  
+`$uri = InertiaRouter::getUriByName('home'); // Will return NULL if the route isn't found`
 
 No equivalent to Ziggy currently exists for Concrete CMS, so if you want to use your named routes client-side you'll need to pass them as props as described in the Inertia documentation.
-  
-To get a route URI by its name in Concrete:  
-`$uri = $router->getRoutes()->get('routename')->getPath();`
 
 ### Title & meta
-Stub.
+The `<Head>` component works in accordance with the original Inertia documentation. Most meta tags and the `<title>` tag have been stripped from the Concrete head, so you will need to define them at the page-level in your components/layouts. There are a few notable exceptions to this:  
+* The favicons and thumbnails for your site should be set up inside the CMS at Dashboard > System &amp; Settings > Basics > Bookmark Icons
+* SEO tracking code (e.g. Google Analytics/Google Tag Manager) should be set up inside the CMS at Dashboard > System &amp; Settings > SEO &amp; Statistics > Tracking Codes
+* The `<meta charset='...'>` tag is included automatically
+
+#### Title Callback
+A global variable `CCM_SITE_NAME` will be exposed with the name of the site as specified inside Dashboard > System &amp; Settings > Basics > Name &amp; Attributes. You can retrieve this when setting your page titles, or even pipe it into your title callback, like so:  
+```
+createInertiaApp({
+  title: title => `${title} :: ${CCM_SITE_NAME}`,
+  // ...
+})
+```
 
 ### Links
-Stub.
+No major changes to the Inertia documentation.
 
 ### Manual Visits
-Stub.
+No major changes to the Inertia documentation.
 
 ### Forms
 Stub.
