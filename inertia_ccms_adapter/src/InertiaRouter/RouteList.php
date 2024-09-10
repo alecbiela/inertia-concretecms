@@ -10,6 +10,9 @@ defined('C5_EXECUTE') or die('Access Denied');
 
 use Concrete\Core\Routing\RouteListInterface;
 use Concrete\Core\Routing\Router;
+use InertiaRouter\InertiaAuthMiddleware;
+use Concrete\Core\Http\ResponseFactory;
+use Concrete\Core\Support\Facade\Application;
 
 class RouteList implements RouteListInterface
 {
@@ -27,6 +30,10 @@ class RouteList implements RouteListInterface
         $allRoutes->buildGroup()
         //->addMiddleware(MyMiddlewareClass::class)
         ->routes('web.php', 'inertia_ccms_adapter');
+
+        $allRoutes->buildGroup()
+        ->addMiddleware(InertiaAuthMiddleware::class)
+        ->routes('auth.php', 'inertia_ccms_adapter');
 
         $allRoutes->buildGroup()
         ->setPrefix('/api')

@@ -52,6 +52,8 @@ Certain top-level routes are already registered by Concrete and it is recommende
 * `/download_file`
 * `/login`
 * `/register`
+* `/page_forbidden`
+* `/page_not_found`
 
 #### Shorthand Routes
 You cannot use `Router::inertia()` in this adapter (it doesn't exist). A global function has been added to mimic this functionality. So in your web.php or api.php route file:  
@@ -126,7 +128,20 @@ Stub.
 Stub.
 
 ### Authentication
-Stub. Will leverage Concrete's User functionality to get the current user and its groups. Documentation will also be added to show how to wrap specific routes inside auth groups to check against a logged in user's group (or require users of a specific group to be logged in).
+#### Defining Auth Routes
+Place routes inside of `inertia_ccms_adapter/routes/auth.php` to automatically require users to authenticate upon visiting them. When users attempt to access those routes, they will be redirected to the CMS login page if they are not already logged in. If they successfully log in, they will be redirected back to the original page they were attempting to access.
+
+#### Defining a Custom Auth Group
+There may be situations where you need to target a specific user group for authentication. In that case, you can modify the config value in `inertia_ccms_adapter/config/inertia.php` for `user_settings.auth_user_group` to the name of a specific group inside the CMS (for example, "Administrators"). This will check the user's groups when logging in and, if they do successfully log in but aren't a part of that group, will be served a "Page Forbidden" error page. The content and design of this page can be adjusted inside `inertia_ccms_adapter/themes/inertia/page_forbidden.php`.
+
+#### Site-Wide Authentication
+Follow these instructions for protecting your entire site behind authentication:
+1. Log in to the CMS and visit the Sitemap page (`/dashboard/sitemap/full`). 
+2. Click on the "Home" page entry, then click on "Permissions" in the menu that appears.
+3. Under "Who can view this page?", deselect "Guest" and then select the user group(s) that you would like to use. 
+4. Click "Save Changes" at the bottom of the pop-up window.
+
+Your entire site is now restricted to users in the groups that you selected. To restore logged-out access, simply repeat the steps but de-select any custom groups and re-select the "Guest" entry in the Permissions menu.
 
 ### Authorization
 Stub. Similar to the Laravel implementation, authorization can be handled using Concrete's built-in permissions and permission objects. Once the permissions have been validated server-side, you can pass the results out to your props.

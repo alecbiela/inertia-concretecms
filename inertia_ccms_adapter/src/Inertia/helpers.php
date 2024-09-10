@@ -1,6 +1,6 @@
 <?php
 /**
- * TODO: Make a helper service inside Concrete CMS to utilize these functions
+ * These functions are registered as globals and can be used anywhere after the Inertia Service Provider is registered.
  */
 if (! function_exists('inertia')) {
     /**

@@ -64,4 +64,21 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | User Settings
+    |--------------------------------------------------------------------------
+    |
+    | Define a custom 'auth_user_group' here to use a custom group name from the CMS
+    | for authentication. Leave as null to use the default group (any registered user)
+    | NOTE: The value is case-sensitive
+    |
+    */
+
+    'user_settings' => [
+
+        'auth_user_group' => null
+        
+    ],
+
 ];

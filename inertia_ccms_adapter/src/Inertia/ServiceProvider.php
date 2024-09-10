@@ -11,6 +11,7 @@ use InertiaRouter\RouteList;
 use Package;
 use Concrete\Core\Foundation\Service\Provider as BaseServiceProvider;
 use Concrete\Core\Http\ServerInterface;
+use Concrete\Core\Page\Theme\ThemeRouteCollection;
 
 class ServiceProvider extends BaseServiceProvider
 {
@@ -49,6 +50,16 @@ class ServiceProvider extends BaseServiceProvider
         $router = $this->app->make('router');
         $list = new RouteList();
         $list->loadRoutes($router);
+
+        // Override the dashboard theme for some core pages
+        // So we can make custom versions of them in our theme
+        $routes = [
+            '/page_not_found',
+            '/page_forbidden'
+        ];
+        foreach($routes as $uri){
+            $this->app->make(ThemeRouteCollection::class)->setThemeByRoute($uri, 'inertia');
+        }
     }
 
     protected function registerConsoleCommands(): void
