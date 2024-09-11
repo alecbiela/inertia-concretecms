@@ -78,6 +78,16 @@ class Response implements Responsable
         return $this;
     }
 
+    public function getViewData()
+    {
+        return $this->viewData;
+    }
+
+    public function getRootView()
+    {
+        return $this->rootView;
+    }
+
     /**
      * Create an HTTP response that represents the object.
      *
