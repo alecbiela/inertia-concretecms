@@ -22,7 +22,7 @@ $cp = is_object($c) ? new Permissions($c) : null;
 if ($cp !== null) {
     $localization->pushActiveContext(Localization::CONTEXT_UI);
     try {
-        View::element('page_controls_footer', ['cp' => $cp, 'c' => $c]);
+        View::element('inertia_page_controls_footer', ['cp' => $cp, 'c' => $c]);
     } finally {
         $localization->popActiveContext();
     }
