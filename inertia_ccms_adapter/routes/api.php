@@ -13,3 +13,4 @@
      * @see src/InertiaRouter/RouteList.php
      */
     use Inertia\Inertia;
+    use InertiaRouter\InertiaAuthMiddleware;

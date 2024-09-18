@@ -27,13 +27,12 @@ class RouteList implements RouteListInterface
         // Route groups are hierarchical, so we have the one "big" group with smaller groups under it
         $allRoutes = $router->buildGroup();
 
+        // To protect an entire route group: 
+        // ->addMiddleware(InertiaAuthMiddleware::class)
+
         $allRoutes->buildGroup()
         //->addMiddleware(MyMiddlewareClass::class)
         ->routes('web.php', 'inertia_ccms_adapter');
-
-        $allRoutes->buildGroup()
-        ->addMiddleware(InertiaAuthMiddleware::class)
-        ->routes('auth.php', 'inertia_ccms_adapter');
 
         $allRoutes->buildGroup()
         ->setPrefix('/api')

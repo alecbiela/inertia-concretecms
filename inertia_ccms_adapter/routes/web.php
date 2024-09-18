@@ -8,6 +8,7 @@
     defined('C5_EXECUTE') or die('Access Denied');
 
     use Inertia\Inertia;
+    use InertiaRouter\InertiaAuthMiddleware;
 
     // Shorthand routes
     // inertia_route('/uri/of/route', 'ComponentName', ['propName' => 'Prop Value'], $router);

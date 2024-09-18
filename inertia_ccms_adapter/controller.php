@@ -16,6 +16,7 @@ use Package;
 use Page;
 use PageTheme;
 use PageType;
+use PageTemplate;
 use SinglePage;
 use Concrete\Core\Page\Theme\Theme;
 use Concrete\Core\Site\Service as SiteService;
@@ -26,7 +27,7 @@ class Controller extends Package
     protected $pkgHandle = 'inertia_ccms_adapter';
     protected $appVersionRequired = '9.0.0';
     protected $phpVersionRequired = '7.4.0';
-    protected $pkgVersion = '0.0.1';
+    protected $pkgVersion = '0.1.0';
 
     public function getPackageDescription()
     {
@@ -46,6 +47,12 @@ class Controller extends Package
     private function installOrUpgrade($pkg = null){
         if(is_null($pkg)) $pkg = Package::getByHandle($this->pkgHandle);
 
+        // Install page theme if not installed
+        $theme = Theme::getByHandle('inertia');
+        if(!is_object($theme)){
+            $theme = Theme::add('inertia',$pkg);
+        }
+
         // Install the page type
         $pageType = PageType::getByHandle('inertia');
         if (!is_object($pageType)) {
@@ -55,16 +62,23 @@ class Controller extends Package
             ), $pkg);
         }
 
-        // Set the home page's type to the new Inertia page type
+        // Install the page templates if not installed
+        $itpl = PageTemplate::getByHandle('inertia');
+        if(!is_object($itpl)){
+            $itpl = PageTemplate::add('inertia', 'Inertia', FILENAME_PAGE_TEMPLATE_DEFAULT_ICON, 'inertia_ccms_adapter');
+        }
+        $stpl = PageTemplate::getByHandle('standard');
+        if(!is_object($stpl)){
+            $stpl = PageTemplate::add('standard', 'Standard', FILENAME_PAGE_TEMPLATE_DEFAULT_ICON, 'inertia_ccms_adapter');
+        }
+
+        // Set the home page's type/template to the new Inertia ones
         $hp = Page::getByID(Page::getHomePageID());
         $hp->setPageType($pageType);
-        $hp->update(['cCacheFullPageContent'=> 0 ]);
-
-        // Install page theme if not installed
-        $theme = Theme::getByHandle('inertia');
-        if(!is_object($theme)){
-            $theme = Theme::add('inertia',$pkg);
-        }
+        $hp->update([
+            'cCacheFullPageContent'=> 0,
+            'pTemplateID' => $itpl->getPageTemplateID()
+        ]);
 
         // Set this theme as active
         $site = $this->app->make(SiteService::class)->getDefault();
