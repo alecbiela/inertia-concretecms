@@ -17,6 +17,7 @@ class InertiaAuthMiddleware implements MiddlewareInterface {
     /**
      * Handle the incoming request.
      *
+     * @throws \InvalidArgumentException
      * @return Response
      */
     public function process(Request $request, DelegateInterface $frame)
@@ -24,20 +25,26 @@ class InertiaAuthMiddleware implements MiddlewareInterface {
         $app = Application::getFacadeApplication();
         $u = $app->make(User::class);
         $pkg = Package::getByHandle('inertia_ccms_adapter');
-        $authGroup = $pkg->getFileConfig()->get('inertia.user_settings.auth_user_group');
+        $gName = $pkg->getFileConfig()->get('inertia.user_settings.auth_user_group');
 
-        if($u->isRegistered()){
-            // If custom group is NULL, just being registered is enough
-            if(!isset($authGroup)) return $frame->next($request);
-
-            // Find out if the user belongs to the custom auth group
-            $groups = $u->getUserGroupObjects();
-            foreach($groups as $g){
-                $gName = $g->getGroupName();
-                if($authGroup === $gName) return $frame->next($request);
+        // Make sure the user group in the config is a valid user group in the CMS
+        if(isset($gName)) {
+            $repository = $app->make(GroupRepository::class);
+            $group = $repository->getGroupByName($gName);
+            if(!is_object($group)){
+                throw new \InvalidArgumentException('Auth group specified in Inertia config is not a valid CMS User Group.');
             }
+
+            if($u->inGroup($group)){
+                return $frame->next($request);
+            }
+
+        } else if($u->isRegistered()) {
+            // No auth group specified, so just being registered is enough
+            return $frame->next($request);
         }
 
+        // No auth checks passed, so return forbidden
         $rf = $app->make(ResponseFactory::class);
         return $rf->forbidden($request->getPath());
     }

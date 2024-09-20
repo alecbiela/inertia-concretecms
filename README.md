@@ -18,7 +18,9 @@ The root template for Inertia in this adapter is located at `inertia_ccms_adapte
 
 ### Client-side
 No major changes. **However,** when setting up your client-side scripts, there are two things to look out for:
-1. Ensure your build step outputs your bundle to "packages/inertia_ccms_adapter/themes/inertia/js/app.bundle.js" for javascript, and "packages/inertia_ccms_adapter/themes/inertia/css/app.bundle.css" for CSS.
+1. Ensure your build step outputs your bundle to the following locations:  
+**Javascript:** `packages/inertia_ccms_adapter/themes/inertia/js/app.bundle.js`    
+**CSS:** `packages/inertia_ccms_adapter/themes/inertia/css/app.bundle.css`  
 2. Do not put your frontend scripts in the "application/js" folder. This introduces some weird overriding of core CMS javascript.
 
 ## The Basics
@@ -129,7 +131,15 @@ Stub.
 
 ### Authentication
 #### Defining Auth Routes
-Place routes inside of `inertia_ccms_adapter/routes/auth.php` to automatically require users to authenticate upon visiting them. When users attempt to access those routes, they will be redirected to the CMS login page if they are not already logged in. If they successfully log in, they will be redirected back to the original page they were attempting to access.
+Chain the `addMiddleware()` method onto the route you require authentication for. Consider the example below:
+```
+$router->get('/users/{id}', function($id) {
+    return Inertia::render('Users/View', [
+        'name' => User::getByUserID($id)->getUserName()
+    ]);
+})->addMiddleware(InertiaAuthMiddleware::class);
+```
+When users attempt to access routes with the `Auth` middleware, they will be redirected to the CMS login page if they are not already logged in. If they successfully log in, they will be redirected back to the original page they were attempting to access.  
 
 #### Defining a Custom Auth Group
 There may be situations where you need to target a specific user group for authentication. In that case, you can modify the config value in `inertia_ccms_adapter/config/inertia.php` for `user_settings.auth_user_group` to the name of a specific group inside the CMS (for example, "Administrators"). This will check the user's groups when logging in and, if they do successfully log in but aren't a part of that group, will be served a "Page Forbidden" error page. The content and design of this page can be adjusted inside `inertia_ccms_adapter/themes/inertia/page_forbidden.php`.
@@ -163,3 +173,8 @@ Stub.
 
 ### Server-side rendering
 Stub.
+
+## License Information
+* This package: Apache-2.0 License, found at `LICENSE.txt`
+* Inertia.js: MIT License, found at `inertia_ccms_adapter/src/Inertia/LICENSE.md`
+* Concrete CMS: MIT License, found at [this link](https://github.com/concretecms/concretecms/blob/9.3.x/LICENSE.TXT), also in the root directory of any Concrete5 or Concrete CMS installation.
