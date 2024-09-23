@@ -8,10 +8,10 @@ This project is licensed under the Apache-2.0 license. A copy of the license can
 
 ### Server-side
 To install the Inertia.js adapter into Concrete CMS, perform the following steps:  
-1. Start with a **fresh** installation of Concrete CMS. Installing the adapter onto existing sites can and will break things! Instructions on how to set up and install Concrete CMS can be found [on their website](https://documentation.concretecms.org/9-x/developers/introduction/installing-concrete-cms). **Note:** For the installation type, select "empty site" or "blank site" option.
-2. Copy the "inertia_ccms_adapter" folder into the site's "packages" directory.
-3. Visit the "Extend Concrete" page while logged in to the CMS.
-4. Install the "Inertia.js" package.
+1. Start with a **fresh** installation of Concrete CMS. Installing the adapter onto existing sites can and will break things! Instructions on how to set up and install Concrete CMS can be found [on their website](https://documentation.concretecms.org/9-x/developers/introduction/installing-concrete-cms). **Note:** For the installation type, select the "Empty Site" option.
+2. After installation is finished, copy the "inertia_ccms_adapter" folder into the site's "packages" directory.
+3. Log in to the CMS.
+4. Visit the "Extend Concrete" page in the dashboard and install the "Inertia.js" package.
 
 #### Root template
 The root template for Inertia in this adapter is located at `inertia_ccms_adapter/themes/inertia/default.php`. There are no blade directives to add - the initial setup is already done for you. Simply make sure your bundle is pointed to the correct location (see below).
