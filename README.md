@@ -2,7 +2,6 @@
 **This project and its documentation are still under construction - it is still in an experimental state and future changes can break compatibility with previous versions until a formal release is published.**  
 This is an unofficial community adapter for using Inertia.js with Concrete CMS.  
 The following documentation will only highlight the _changes_ made to the Laravel adapter. For the full documentation, please see [the official Inertia.js documentation](https://inertiajs.com/).  
-This project is licensed under the Apache-2.0 license. A copy of the license can be found in `LICENSE.txt`
 
 ## Installation
 
@@ -24,9 +23,6 @@ No major changes. **However,** when setting up your client-side scripts, there a
 2. Do not put your frontend scripts in the "application/js" folder. This introduces some weird overriding of core CMS javascript.
 
 ## The Basics
-
-### Pages
-No major changes to the Inertia documentation.
 
 ### Responses
 
@@ -69,7 +65,7 @@ becomes
 You **must** pass the $router variable as the 4th parameter, so add an empty array for props if you don't have any to define.
 
 #### Generating URLs
-In Concrete, you _can_ name your routes by piping the route into the  'setName' function . For example, to add the name of "home" to your homepage route, you could write:  
+In Concrete, you _can_ name your routes by piping the route into the 'setName' function. For example, to add the name of "home" to your homepage route, you could write:  
 
 ```
 $router->get('/', function(){ 
@@ -77,7 +73,7 @@ $router->get('/', function(){
 })->setName('home');
 ```
   
-There's no real "easy" way (to my knowledge) to get a route by its name in Concrete. This adapter includes a static `getUriByName` method in `InertiaRouter\InertiaRouter` that can be used to handle getting routes by the names you set:  
+To retrieve a route by its name, this adapter includes a static `getUriByName` method in `InertiaRouter\InertiaRouter`:  
 `$uri = InertiaRouter::getUriByName('home'); // Will return NULL if the route isn't found`
 
 No equivalent to Ziggy currently exists for Concrete CMS, so if you want to use your named routes client-side you'll need to pass them as props as described in the Inertia documentation.
@@ -89,19 +85,13 @@ The `<Head>` component works in accordance with the original Inertia documentati
 * The `<meta charset='...'>` tag is included automatically
 
 #### Title Callback
-A global variable `CCM_SITE_NAME` will be exposed with the name of the site as specified inside Dashboard > System &amp; Settings > Basics > Name &amp; Attributes. You can retrieve this when setting your page titles, or even pipe it into your title callback, like so:  
+A global variable `CCM_SITE_NAME` will be exposed with the name of the site as specified inside Dashboard > System &amp; Settings > Basics > Name &amp; Attributes (defaults to the "Site Name" you provide during Concrete CMS installation). You can retrieve this when setting your page titles, or even pipe it into your title callback, like so:  
 ```
 createInertiaApp({
   title: title => `${title} :: ${CCM_SITE_NAME}`,
   // ...
 })
 ```
-
-### Links
-No major changes to the Inertia documentation.
-
-### Manual Visits
-No major changes to the Inertia documentation.
 
 ### Forms
 Stub.
@@ -157,7 +147,7 @@ Your entire site is now restricted to users in the groups that you selected. To 
 Stub. Similar to the Laravel implementation, authorization can be handled using Concrete's built-in permissions and permission objects. Once the permissions have been validated server-side, you can pass the results out to your props.
 
 ### CSRF Protection
-Stub. Concrete has a built-in token library that can be used to generate and validate tokens. In practice, you'd generate a token on a response going out to the user and store it as part of the submission data that would be coming back to the server (e.g. as a hidden form field). Then, in the appropriate controller, you'd validate that token. See [this page on the CMS documentation](https://documentation.concretecms.org/developers/security/protecting-against-csrf-with-token-validation) for more information. (This will be updated with an inertia-specific imlementation in the future).
+Stub. Concrete has a built-in token library that can be used to generate and validate tokens. In practice, you'd generate a token on a response going out to the user and store it as part of the submission data that would be coming back to the server (e.g. as a hidden form field). Then, in the appropriate controller, you'd validate that token. See [this page on the CMS documentation](https://documentation.concretecms.org/developers/security/protecting-against-csrf-with-token-validation) for more information. (This will be updated with an inertia-specific implementation in the future).
 
 ### Error handling
 Stub.
